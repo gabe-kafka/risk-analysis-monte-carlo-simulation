@@ -1,0 +1,44 @@
+wbs,wbs_name,activity_id,activity_name,duration_days,predecessors
+1.0,Pre-Construction Phase,A101,Project kickoff & team mobilization,5,
+1.0,Pre-Construction Phase,A102,Design development & coordination,60,A101
+1.0,Pre-Construction Phase,A103,Permit submission,30,A102
+1.0,Pre-Construction Phase,A104,Permit approval process,45,A103
+1.0,Pre-Construction Phase,A105,Procurement planning,20,A102
+1.0,Pre-Construction Phase,A106,Contractor mobilization,10,A104
+2.0,Site Preparation,A201,Site survey & layout,10,A106
+2.0,Site Preparation,A202,Utility disconnection/relocation,20,A201
+2.0,Site Preparation,A203,Demolition,25,A202
+2.0,Site Preparation,A204,Site clearing & grading,20,A203
+3.0,Excavation & Earth Retention,A301,Install shoring system,40,A204
+3.0,Excavation & Earth Retention,A302,Bulk excavation,50,A301
+3.0,Excavation & Earth Retention,A303,Dewatering system installation,15,A301
+3.0,Excavation & Earth Retention,A304,Excavation to final depth,15,"A302,A303"
+4.0,Foundation Construction,A401,Pile mobilization,10,"A304,A105"
+4.0,Foundation Construction,A402,Pile installation,60,A401
+4.0,Foundation Construction,A403,Pile load testing,20,A402
+4.0,Foundation Construction,A404,Excavation leveling & prep,15,A304
+4.0,Foundation Construction,A405,Formwork & reinforcement (mat),20,"A403,A404"
+4.0,Foundation Construction,A406,Concrete pour (mat foundation),10,A405
+4.0,Foundation Construction,A407,Curing & waterproofing,15,A406
+5.0,Superstructure,A501,Tower crane installation,15,A407
+5.0,Superstructure,A502,Structural core construction,60,A501
+5.0,Superstructure,A503,Floor cycle (1-10),50,A502
+5.0,Superstructure,A504,Floor cycle (11-20),50,A503
+5.0,Superstructure,A505,Floor cycle (21-30),50,A504
+5.0,Superstructure,A506,Floor cycle (31-41),60,A505
+5.0,Superstructure,A507,Structural topping out,15,A506
+6.0,Building Enclosure,A601,Curtain wall fabrication,90,A502
+6.0,Building Enclosure,A602,Curtain wall installation (lower floors),60,A503
+6.0,Building Enclosure,A603,Curtain wall installation (upper floors),60,"A506,A601"
+7.0,MEP Systems,A701,MEP rough-in (lower floors),80,A503
+7.0,MEP Systems,A702,MEP rough-in (upper floors),80,"A505,A603"
+7.0,MEP Systems,A703,Equipment installation,40,"A701,A702"
+7.0,MEP Systems,A704,System testing (MEP),40,A703
+8.0,Interior Finishes,A801,Partition walls & drywall,60,A602
+8.0,Interior Finishes,A802,Flooring installation,40,A801
+8.0,Interior Finishes,A803,Painting & finishes,40,A802
+8.0,Interior Finishes,A804,Fixtures & fittings,40,A803
+9.0,Commissioning & Handover,A901,Final inspections,25,"A804,A704,A603,A507"
+9.0,Commissioning & Handover,A902,Punch list completion,25,A901
+9.0,Commissioning & Handover,A903,Occupancy certification,15,A902
+9.0,Commissioning & Handover,A904,Final handover,10,A903

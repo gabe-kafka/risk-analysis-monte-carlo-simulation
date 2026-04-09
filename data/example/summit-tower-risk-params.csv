@@ -1,0 +1,44 @@
+activity_id,optimistic_factor,most_likely_factor,pessimistic_factor,notes
+A101,0.80,1.00,1.30,Kickoff — no identified risks
+A102,0.80,1.00,1.50,Design coordination — SKD-13 design changes
+A103,0.90,1.00,1.30,Permit submission — no identified risks
+A104,0.65,1.00,2.20,Permit approval — SKD-03 permit delays + SKD-14 inspection delays (PID 28+14)
+A105,0.85,1.00,1.35,Procurement planning — no direct risks
+A106,0.75,1.00,1.60,Contractor mobilization — SKD-03 permit delays cascade
+A201,0.85,1.00,1.30,Site survey — no identified risks
+A202,0.75,1.00,1.70,Utility relocation — SKD-09 underground utility strike (PID 18)
+A203,0.80,1.00,1.40,Demolition — no identified risks
+A204,0.75,1.00,1.60,Site clearing — SKD-05 weather (PID 28)
+A301,0.70,1.00,2.00,Shoring — SKD-05 weather + SKD-08 excavation failure + SKD-09 utility strike + SKD-12 safety (PID 28+20+18+15)
+A302,0.65,1.00,2.20,Bulk excavation — SKD-02 groundwater + SKD-05 weather + SKD-08 excavation failure + SKD-12 safety (PID 64+28+20+15)
+A303,0.70,1.00,1.90,Dewatering — SKD-02 groundwater + SKD-05 weather + SKD-12 safety (PID 64+28+15)
+A304,0.65,1.00,2.10,Final depth excavation — SKD-02 groundwater + SKD-05 weather + SKD-08 excavation failure + SKD-12 safety (PID 64+28+20+15)
+A401,0.80,1.00,1.50,Pile mobilization — SKD-05 weather (PID 28)
+A402,0.60,1.00,2.20,Pile installation — SKD-01 material prices + SKD-04 labor + SKD-05 weather + SKD-06 pile capacity + SKD-11 material delivery (PID 36+28+28+28+18)
+A403,0.70,1.00,2.00,Pile load testing — SKD-06 pile capacity shortfall (PID 28) — retesting if shortfall
+A404,0.85,1.00,1.30,Excavation leveling — no identified risks
+A405,0.70,1.00,1.80,Mat formwork & rebar — SKD-01 material prices + SKD-06 pile capacity + SKD-13 design changes (PID 36+28+14)
+A406,0.80,1.00,1.50,Concrete pour — SKD-01 material prices (PID 36)
+A407,0.75,1.00,1.70,Curing & waterproofing — SKD-02 groundwater + SKD-15 differential settlement (PID 64+10)
+A501,0.60,1.00,2.20,Tower crane install — SKD-04 labor + SKD-05 weather + SKD-07 crane delivery + SKD-10 crane install + SKD-12 safety + SKD-15 settlement (PID 28+28+15+15+15+10)
+A502,0.60,1.00,2.00,Core construction — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-11 delivery + SKD-12 safety + SKD-13 design (PID 36+28+28+18+15+14)
+A503,0.70,1.00,1.80,Floor cycle 1-10 — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-12 safety (PID 36+28+28+15)
+A504,0.70,1.00,1.70,Floor cycle 11-20 — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-12 safety (PID 36+28+28+15)
+A505,0.70,1.00,1.70,Floor cycle 21-30 — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-12 safety (PID 36+28+28+15)
+A506,0.70,1.00,1.70,Floor cycle 31-41 — SKD-01 material + SKD-04 labor + SKD-12 safety (PID 36+28+15)
+A507,0.85,1.00,1.30,Topping out — no identified risks
+A601,0.80,1.00,1.60,CW fabrication — SKD-11 material delivery (PID 18)
+A602,0.80,1.00,1.50,CW install lower — SKD-04 labor (PID 28)
+A603,0.75,1.00,1.60,CW install upper — SKD-04 labor + wind at height (PID 28)
+A701,0.85,1.00,1.40,MEP rough-in lower — no identified risks
+A702,0.80,1.00,1.50,MEP rough-in upper — SKD-04 labor (PID 28)
+A703,0.80,1.00,1.50,Equipment installation — SKD-04 labor (PID 28)
+A704,0.80,1.00,1.50,System testing — no identified risks
+A801,0.85,1.00,1.35,Partitions & drywall — no identified risks
+A802,0.85,1.00,1.35,Flooring — no identified risks
+A803,0.85,1.00,1.35,Painting & finishes — no identified risks
+A804,0.85,1.00,1.35,Fixtures & fittings — no identified risks
+A901,0.75,1.00,1.70,Final inspections — SKD-14 inspection delays (PID 14)
+A902,0.80,1.00,1.70,Punch list — scope creep
+A903,0.65,1.00,2.00,Occupancy cert — SKD-14 inspection delays (PID 14) — regulatory uncertainty
+A904,0.85,1.00,1.30,Final handover — no identified risks
