@@ -55,11 +55,19 @@ ACCENT = "#3B82F6"
 CRIT = "#DC2626"
 GREEN = "#16A34A"
 
-WBS_COLORS = {
-    "1.0": "#264653", "2.0": "#2A9D8F", "3.0": "#457B9D",
-    "4.0": "#8D99AE", "5.0": "#E76F51", "6.0": "#F4A261",
-    "7.0": "#6A994E", "8.0": "#BC6C25", "9.0": "#7B2CBF",
-}
+WBS_PALETTE = [
+    "#264653", "#2A9D8F", "#457B9D", "#8D99AE", "#E76F51",
+    "#F4A261", "#6A994E", "#BC6C25", "#7B2CBF", "#3B82F6",
+    "#06B6D4", "#DC2626", "#D97706", "#16A34A", "#A855F7",
+]
+_wbs_color_cache: dict[str, str] = {}
+
+
+def wbs_color(wbs: str) -> str:
+    """Auto-assign colors to WBS codes in order encountered."""
+    if wbs not in _wbs_color_cache:
+        _wbs_color_cache[wbs] = WBS_PALETTE[len(_wbs_color_cache) % len(WBS_PALETTE)]
+    return _wbs_color_cache[wbs]
 
 # ── Excel style constants ────────────────────────────────────────────────
 HEADER_FONT = Font(name="Calibri", bold=True, size=11, color="FFFFFF")
@@ -400,7 +408,7 @@ def plot_tornado(
     ax.set_facecolor(BG)
     labels = [f"{aid}  {name}" for aid, name, _, _ in top]
     values = [c for _, _, c, _ in top]
-    colors = [WBS_COLORS[wbs] for _, _, _, wbs in top]
+    colors = [wbs_color(wbs) for _, _, _, wbs in top]
 
     ax.barh(range(len(top)), values, color=colors, edgecolor="#1f1f1f", linewidth=0.4, height=0.7)
     for i, (_, _, corr, _) in enumerate(top):
@@ -455,6 +463,10 @@ def main() -> None:
     workbook_path = args.workbook or args.schedule.parent / (args.schedule.stem + "-monte-carlo.xlsx")
 
     activities, csv_order = load_schedule(args.schedule)
+
+    # Pre-populate WBS color cache in schedule order for consistent coloring
+    for aid in csv_order:
+        wbs_color(activities[aid].wbs)
 
     if args.init:
         if args.risk_params is None:

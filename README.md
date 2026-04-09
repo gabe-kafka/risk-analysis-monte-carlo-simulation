@@ -5,29 +5,36 @@ A Python-based Monte Carlo schedule risk simulator that matches **Primavera Risk
 ## What It Does
 
 1. Reads a deterministic CPM schedule (activity network with durations and FS predecessors)
-2. Applies triangular duration distributions (optimistic / most likely / pessimistic) per activity
-3. Runs N iterations of the CPM forward pass with randomly sampled durations
-4. Produces: histogram, S-curve (CDF), tornado sensitivity chart, and a formatted Excel workbook with results
+2. Renders a Gantt chart of the deterministic baseline
+3. Applies triangular duration distributions (optimistic / most likely / pessimistic) per activity
+4. Runs N iterations of the CPM forward pass with randomly sampled durations
+5. Produces: histogram, S-curve (CDF), tornado sensitivity chart, and a formatted Excel workbook with results
 
 ## Quick Start
 
 ```bash
 pip install -r requirements.txt
 
-# Step 1: Create the Excel workbook from your schedule + risk parameters
+# Step 1: Render the deterministic Gantt chart
+python3 scripts/render_gantt.py \
+  --schedule data/example/summit-tower-activities.csv
+
+# Step 2: Create the Excel workbook from your schedule + risk parameters
 python3 scripts/monte_carlo.py \
   --schedule data/example/summit-tower-activities.csv \
   --risk-params data/example/summit-tower-risk-params.csv \
   --init
 
-# Step 2: Review/edit the "Duration Uncertainty" sheet in Excel
+# Step 3: Review/edit the "Duration Uncertainty" sheet in Excel
 # Adjust optimistic/pessimistic factors based on your risk register
 
-# Step 3: Run the simulation
+# Step 4: Run the simulation
 python3 scripts/monte_carlo.py \
   --schedule data/example/summit-tower-activities.csv \
   --workbook data/example/summit-tower-activities-monte-carlo.xlsx
 ```
+
+All outputs land in `outputs/`. The Excel workbook's Results and Sensitivity sheets are updated in place.
 
 ## Input Format
 
@@ -65,23 +72,46 @@ A103,0.90,1.00,1.30,Permit submission — mostly administrative
 
 | Output | Description |
 |---|---|
+| `gantt.png` | Deterministic CPM schedule Gantt chart |
 | `monte-carlo-histogram.png` | Distribution of project finish dates with P50/P80/P90 markers |
 | `monte-carlo-scurve.png` | Cumulative probability curve (CDF) with confidence annotations |
 | `monte-carlo-tornado.png` | Top 15 activities by Spearman rank correlation with finish |
 | Excel "Results" sheet | Full percentile table (P5 through P95), mean, std dev, min/max |
 | Excel "Sensitivity" sheet | All activities ranked by correlation with interpretation labels |
 
-## CLI Options
+## CLI — Gantt Chart
 
 ```
---schedule PATH       Schedule CSV (required)
---risk-params PATH    Risk parameters CSV (required with --init)
---workbook PATH       Excel workbook path (auto-generated if omitted)
---output PATH         Output directory (default: outputs/)
---init                Create workbook from CSVs
--n, --iterations N    Number of iterations (default: 10,000)
---seed N              Random seed (default: 42)
+python3 scripts/render_gantt.py --schedule PATH [--output PATH]
 ```
+
+## CLI — Monte Carlo Simulation
+
+```
+python3 scripts/monte_carlo.py --schedule PATH --risk-params PATH --init
+python3 scripts/monte_carlo.py --schedule PATH [--workbook PATH] [-n N] [--seed N] [--output DIR]
+```
+
+| Flag | Description |
+|---|---|
+| `--schedule` | Schedule CSV — activity network (always required) |
+| `--risk-params` | Risk parameters CSV (required with `--init`) |
+| `--workbook` | Excel workbook path (auto-generated if omitted) |
+| `--output` | Output directory (default: `outputs/`) |
+| `--init` | Create workbook from CSVs |
+| `-n, --iterations` | Number of iterations (default: 10,000) |
+| `--seed` | Random seed (default: 42) |
+
+## Workflow: Edit Assumptions → Rerun
+
+The Excel workbook is both input and output:
+
+1. **Duration Uncertainty** sheet (blue tab) — edit optimistic/pessimistic factors here
+2. Rerun `monte_carlo.py` (without `--init`)
+3. **Results** sheet (green tab) and **Sensitivity** sheet (orange tab) are overwritten with new results
+4. Charts in `outputs/` are regenerated
+
+This is the same loop you'd use in OPRA: adjust three-point estimates, re-analyze, review outputs.
 
 ## How It Matches OPRA
 
@@ -96,7 +126,7 @@ The key difference: assumptions are fully transparent in a single Excel workbook
 
 ## Example: Summit Tower
 
-The `data/example/` directory contains a complete worked example — a 41-story, 489-ft residential tower in Newark, NJ with 44 activities and 15 identified risks across 9 categories. The risk register findings are reflected in the duration distributions.
+The `data/example/` directory contains a complete worked example — a 41-story, 489-ft residential tower in Newark, NJ with 44 activities and 15 identified risks across 9 categories. The risk register findings are reflected in the duration distributions (see the `notes` column in `summit-tower-risk-params.csv`).
 
 ## Dependencies
 
