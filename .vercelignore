@@ -1,0 +1,7 @@
+scripts/
+data/
+outputs/
+tasks/
+requirements.txt
+Makefile
+*.py

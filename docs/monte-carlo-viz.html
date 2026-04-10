@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <title>Monte Carlo Schedule Risk Simulation — All-In-One</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters: [
+    {left: '$$', right: '$$', display: true},
+    {left: '$', right: '$', display: false},
+    {left: '\\(', right: '\\)', display: false},
+    {left: '\\[', right: '\\]', display: true}
+  ], throwOnError: false});"></script>
 <style>
   :root {
     --bg: #FFFFFF;
@@ -96,39 +105,102 @@
   #scene-1 { padding: 0; display: grid; }
   .intro-main {
     display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
     align-items: center;
-    justify-items: start;
-    padding: 6% 8%;
+    padding: 4% 6%;
+    gap: 4%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .intro-left { display: flex; flex-direction: column; justify-content: center; }
+  .intro-right {
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+  }
+  .intro-right img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .intro-right .photo-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 6px 10px;
+    background: rgba(10,10,10,0.72);
+    color: #E5E5E5;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    justify-content: space-between;
   }
   .intro-sup {
     font-size: 10px;
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
   .intro-title {
-    font-size: 54px;
+    font-size: 48px;
     font-weight: 700;
-    line-height: 1.05;
+    line-height: 1.02;
     letter-spacing: -0.02em;
     color: var(--text);
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
   .intro-title .accent { color: var(--accent); }
+  .intro-project {
+    font-size: 11px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 10px;
+    align-items: center;
+  }
+  .intro-project .tag {
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+  .intro-project .name { font-weight: 700; }
+  .intro-credit {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .intro-credit strong { color: var(--accent); font-weight: 700; letter-spacing: 0.12em; }
   .intro-subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--muted);
     line-height: 1.5;
-    max-width: 720px;
-    margin-bottom: 24px;
+    max-width: 600px;
+    margin-bottom: 18px;
   }
   .intro-badges {
     display: flex;
     gap: 1px;
     background: var(--border);
     border: 1px solid var(--border);
-    margin-bottom: 24px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
   }
   .intro-badge { background: var(--bg); padding: 8px 14px; }
   .intro-badge .lbl {
@@ -339,16 +411,17 @@
     margin-bottom: 10px;
   }
   .sidebar-note .eq {
-    padding: 10px;
+    padding: 10px 12px;
     background: var(--surface);
     border: 1px solid var(--border);
-    font-size: 10px;
-    line-height: 1.5;
     color: var(--text);
     margin: 8px 0;
-    white-space: pre;
     overflow-x: auto;
+    text-align: center;
   }
+  .sidebar-note .eq .katex { font-size: 1em; color: var(--text); }
+  .sidebar-note .eq .katex-display { margin: 4px 0; }
+  .sidebar-note p .katex { font-size: 0.95em; }
 
   /* ── SCENE 5: UNCERTAINTY dist grid ─────── */
   #scene-5 .dist-grid {
@@ -615,10 +688,10 @@
 
 <!-- ═══ TOP BAR ═══════════════════════════════ -->
 <div id="topbar">
-  <div class="brand">MONTE CARLO <span class="dim">· SCHEDULE RISK · ALL-IN-ONE</span></div>
+  <div class="brand">QSRA <span class="dim">· MONTE CARLO · SUMMIT TOWER</span></div>
   <div class="scene-indicator">SCENE <strong id="scene-num">01</strong> / 07 · <span id="scene-title">INTRO</span></div>
   <div class="right">
-    <span id="topbar-project">SUMMIT TOWER · 41 FLOORS · NEWARK NJ</span>
+    <span id="topbar-project">G. KAFKA · S.E.T · FOUNDATION DESIGN</span>
     <button id="btn-fullscreen">⛶ FULL</button>
   </div>
 </div>
@@ -629,23 +702,38 @@
   <!-- ── SCENE 1: INTRO ────────────────────── -->
   <section id="scene-1" class="scene active">
     <div class="intro-main">
-      <div class="intro-sup">RISK ANALYSIS · OPRA-COMPATIBLE METHODOLOGY · ALL-IN-ONE</div>
-      <h1 class="intro-title">MONTE CARLO<br>SCHEDULE <span class="accent">RISK</span></h1>
-      <p class="intro-subtitle">
-        Three-point triangular duration distributions over a 44-activity CPM network.
-        Sampled durations propagate through a forward pass; the maximum early-finish
-        defines the project completion for that iteration. The entire repository —
-        methodology, Python source, data, results — is embedded in this single HTML file.
-      </p>
-      <div class="intro-badges">
-        <div class="intro-badge"><span class="lbl">Iterations</span><span class="val">10,000</span></div>
-        <div class="intro-badge"><span class="lbl">Activities</span><span class="val" id="intro-n">44</span></div>
-        <div class="intro-badge"><span class="lbl">WBS Groups</span><span class="val">9</span></div>
-        <div class="intro-badge"><span class="lbl">Risks</span><span class="val">15</span></div>
-        <div class="intro-badge"><span class="lbl">Baseline T</span><span class="val" id="intro-det">—</span></div>
-        <div class="intro-badge"><span class="lbl">Repo Files</span><span class="val" id="intro-files">—</span></div>
+      <div class="intro-left">
+        <div class="intro-sup">QUANTITATIVE SCHEDULE RISK ANALYSIS · AACE RP 57R-09 · OPRA-COMPATIBLE</div>
+        <h1 class="intro-title">MONTE CARLO<br>SCHEDULE <span class="accent">RISK</span></h1>
+        <div class="intro-project">
+          <span class="tag">PROJECT</span>
+          <span class="name">SUMMIT TOWER · 41 FLOORS · 489 FT · NEWARK NJ</span>
+        </div>
+        <div class="intro-credit">
+          STRUCTURAL ENGINEERING · FOUNDATION DESIGN<br>
+          <strong>GABE KAFKA</strong> · STRUCTURAL ENGINEERING TECHNOLOGIES (S.E.T)
+        </div>
+        <p class="intro-subtitle">
+          Three-point triangular duration distributions over a 43-activity CPM network.
+          Sampled durations propagate through a forward pass; the maximum early-finish
+          defines the project completion for each iteration.
+        </p>
+        <div class="intro-badges">
+          <div class="intro-badge"><span class="lbl">Iterations</span><span class="val">10,000</span></div>
+          <div class="intro-badge"><span class="lbl">Activities</span><span class="val" id="intro-n">43</span></div>
+          <div class="intro-badge"><span class="lbl">WBS Groups</span><span class="val">9</span></div>
+          <div class="intro-badge"><span class="lbl">Risks</span><span class="val">15</span></div>
+          <div class="intro-badge"><span class="lbl">Baseline T</span><span class="val" id="intro-det">—</span></div>
+        </div>
+        <div class="intro-hint">PRESS <kbd>→</kbd> TO ADVANCE · <kbd>SPACE</kbd> TO PLAY · <kbd>F</kbd> FULLSCREEN · <kbd>1-7</kbd> JUMP</div>
       </div>
-      <div class="intro-hint">PRESS <kbd>→</kbd> TO ADVANCE · <kbd>SPACE</kbd> TO PLAY · <kbd>F</kbd> FULLSCREEN · <kbd>1-7</kbd> JUMP</div>
+      <div class="intro-right">
+        <img src="assets/summit-tower.jpeg" alt="Summit Tower — 41-story residential tower, Newark NJ">
+        <div class="photo-caption">
+          <span>SUMMIT TOWER · NEWARK NJ</span>
+          <span>RENDERING</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -707,12 +795,11 @@
     </div>
     <div class="sidebar-note">
       <h3>01 · THE SETUP</h3>
-      <p>The project is a directed acyclic graph of <strong>n</strong> activities with finish-to-start, zero-lag precedence. Each activity has a baseline duration d<sub>i</sub> and a set of predecessors P(i).</p>
+      <p>The project is a directed acyclic graph of $n$ activities with finish-to-start, zero-lag precedence. Each activity has a baseline duration $d_i$ and a set of predecessors $P(i)$.</p>
       <h3>02 · THE FORWARD PASS</h3>
-      <p>Given a topological ordering, CPM computes early start (ES) and early finish (EF) recursively:</p>
-      <div class="eq">ES_i = max(EF_j : j ∈ P(i))
-EF_i = ES_i + d_i
-T_det = max(EF_i)</div>
+      <p>Given a topological ordering, CPM computes early start ($ES_i$) and early finish ($EF_i$) recursively:</p>
+      <div class="eq">$$ES_i = \max_{j \in P(i)} EF_j \qquad EF_i = ES_i + d_i$$
+$$T^{\text{det}} = \max_{i} EF_i$$</div>
       <h3>03 · WHY DETERMINISTIC ISN'T ENOUGH</h3>
       <p>The baseline tells us <em>what would happen</em> if every activity took exactly its estimated duration. But durations are uncertain — weather, labor, permits, groundwater, design changes. We need a probabilistic view.</p>
       <p style="color: var(--accent); margin-top: 18px;">→ NEXT: HOW WE MODEL THAT UNCERTAINTY</p>
@@ -730,22 +817,14 @@ T_det = max(EF_i)</div>
     </div>
     <div class="sidebar-note">
       <h3>01 · THREE-POINT ESTIMATES</h3>
-      <p>Each activity gets three multiplicative factors from the risk register — optimistic, most-likely, pessimistic:</p>
-      <div class="eq">(a_i, m_i, b_i) = (α·d_i, μ·d_i, β·d_i)</div>
+      <p>Each activity receives three multiplicative factors from the risk register — optimistic ($\alpha$), most-likely ($\mu$), pessimistic ($\beta$):</p>
+      <div class="eq">$$(a_i, m_i, b_i) = (\alpha_i d_i,\; \mu_i d_i,\; \beta_i d_i)$$</div>
       <h3>02 · THE TRIANGULAR DENSITY</h3>
-      <p>Activity duration D_i is modeled as a triangular random variable:</p>
-      <div class="eq">D_i ~ Tri(a_i, m_i, b_i)
-
-         2(x - a)
-f(x) = ──────────       a ≤ x ≤ m
-       (b-a)(m-a)
-
-         2(b - x)
-f(x) = ──────────       m &lt; x ≤ b
-       (b-a)(b-m)</div>
+      <p>Activity duration $D_i$ is modeled as a triangular random variable $D_i \sim \mathrm{Tri}(a_i, m_i, b_i)$ with density:</p>
+      <div class="eq">$$f_{D_i}(x) = \begin{cases} \dfrac{2(x-a_i)}{(b_i-a_i)(m_i-a_i)} & a_i \le x \le m_i \\[0.4em] \dfrac{2(b_i-x)}{(b_i-a_i)(b_i-m_i)} & m_i \lt x \le b_i \\[0.4em] 0 & \text{otherwise} \end{cases}$$</div>
       <h3>03 · RISK REGISTER → DISTRIBUTION</h3>
-      <p>Identified risks are encoded into the distribution <em>width</em>: activities exposed to multiple risks get wider pessimistic tails (higher β). No discrete risk events are modeled separately.</p>
-      <p style="color: var(--muted); font-size: 10px; margin-top: 8px;">e.g. A402 Pile Installation: α=0.60 β=2.20 (5 risks)</p>
+      <p>Identified risks are encoded into the distribution <em>width</em>: activities exposed to multiple risks get wider pessimistic tails (higher $\beta_i$). No discrete risk events are modeled separately.</p>
+      <p style="color: var(--muted); font-size: 10px; margin-top: 8px;">e.g. A402 Pile Installation: $\alpha=0.60$, $\beta=2.20$ (5 risks)</p>
       <p style="color: var(--accent); margin-top: 18px;">→ NEXT: SAMPLE 10,000 TIMES</p>
     </div>
   </section>
@@ -1464,7 +1543,8 @@ const REPO_FILES = {};
 document.querySelectorAll('script[type="text/plain"][data-file]').forEach(s => {
   REPO_FILES[s.dataset.file] = s.textContent.replace(/^\n/, '').replace(/\s+$/, '');
 });
-document.getElementById('intro-files').textContent = Object.keys(REPO_FILES).length;
+const introFilesEl = document.getElementById('intro-files');
+if (introFilesEl) introFilesEl.textContent = Object.keys(REPO_FILES).length;
 
 // ============================================================
 // CSV PARSER
@@ -1846,14 +1926,34 @@ function renderLiveGantt() {
 function renderDistGrid() {
   const grid = document.getElementById('dist-grid');
   grid.innerHTML = '';
+
+  // Compute global axis bounds in multiplicative-factor units,
+  // so every cell renders its distribution on the same shared scale.
+  let globalLo = Infinity, globalHi = -Infinity, globalPeak = 0;
+  ACTIVITIES.forEach(a => {
+    const rp = RISK[a.id];
+    if (!rp) return;
+    if (rp.opt < globalLo) globalLo = rp.opt;
+    if (rp.pes > globalHi) globalHi = rp.pes;
+    const peak = 2 / (rp.pes - rp.opt);
+    if (peak > globalPeak) globalPeak = peak;
+  });
+  // Pad the x-range slightly for readability
+  const xPad = 0.03;
+  globalLo = Math.floor((globalLo - xPad) * 20) / 20;
+  globalHi = Math.ceil((globalHi + xPad) * 20) / 20;
+
   ACTIVITIES.forEach(a => {
     const cell = document.createElement('div');
     cell.className = 'dist-cell';
     const rp = RISK[a.id];
     if (!rp) return;
-    const lo = a.duration * rp.opt;
-    const hi = a.duration * rp.pes;
-    const mode = a.duration * rp.ml;
+
+    // Both factor-space (for plotting) and day-space (for display)
+    const loFactor = rp.opt, hiFactor = rp.pes, modeFactor = rp.ml;
+    const loDays = a.duration * loFactor;
+    const hiDays = a.duration * hiFactor;
+    const peakDensity = 2 / (hiFactor - loFactor);  // PDF peak (in factor units)
 
     const aid = document.createElement('div');
     aid.className = 'aid';
@@ -1862,29 +1962,51 @@ function renderDistGrid() {
 
     const params = document.createElement('div');
     params.className = 'params';
-    params.textContent = `d=${a.duration}d  α=${rp.opt}  β=${rp.pes}  (${lo.toFixed(0)}-${hi.toFixed(0)})`;
+    params.textContent = `d=${a.duration}d  α=${rp.opt.toFixed(2)}  β=${rp.pes.toFixed(2)}  (${loDays.toFixed(0)}-${hiDays.toFixed(0)}d)`;
     cell.appendChild(params);
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '100%');
-    svg.setAttribute('height', 56);
-    svg.setAttribute('viewBox', '0 0 200 56');
+    svg.setAttribute('height', 64);
+    svg.setAttribute('viewBox', '0 0 200 64');
     svg.setAttribute('preserveAspectRatio', 'none');
-    const ml = 10, mr = 10, mt = 4, mb = 12;
+    const ml = 12, mr = 12, mt = 4, mb = 16;
     const chartW = 200 - ml - mr;
-    const chartH = 56 - mt - mb;
-    const xToPx = x => ml + ((x - lo) / (hi - lo)) * chartW;
-    const yToPx = y => mt + chartH - y * chartH;
-    const pts = `${xToPx(lo)},${yToPx(0)} ${xToPx(mode)},${yToPx(1)} ${xToPx(hi)},${yToPx(0)}`;
-    svg.appendChild(ns('polygon', {points: pts, fill: WBS_COLORS[a.wbs], 'fill-opacity': 0.25, stroke: WBS_COLORS[a.wbs], 'stroke-width': 0.8}));
+    const chartH = 64 - mt - mb;
+
+    // Shared axes: x in factor units, y normalised to globalPeak
+    const xToPx = v => ml + ((v - globalLo) / (globalHi - globalLo)) * chartW;
+    const yToPx = d => mt + chartH - (d / globalPeak) * chartH;
+
+    // Baseline reference line at factor = 1.0 (always drawn, muted)
+    const baseX = xToPx(1.0);
+    svg.appendChild(ns('line', {x1: baseX, y1: mt, x2: baseX, y2: mt + chartH, stroke: 'var(--border)', 'stroke-width': 0.5, 'stroke-dasharray': '1 1'}));
+
+    // Triangle (PDF) on shared scale
+    const pts = `${xToPx(loFactor)},${yToPx(0)} ${xToPx(modeFactor)},${yToPx(peakDensity)} ${xToPx(hiFactor)},${yToPx(0)}`;
+    svg.appendChild(ns('polygon', {points: pts, fill: WBS_COLORS[a.wbs], 'fill-opacity': 0.28, stroke: WBS_COLORS[a.wbs], 'stroke-width': 1.0}));
+
+    // Baseline (x-axis) line
     svg.appendChild(ns('line', {x1: ml, y1: yToPx(0), x2: ml + chartW, y2: yToPx(0), stroke: 'var(--border)', 'stroke-width': 0.5}));
-    [lo, mode, hi].forEach(v => {
+
+    // Tick labels: global factor marks (0.6, 0.8, 1.0, 1.2, 1.4, ...)
+    const step = 0.2;
+    for (let v = Math.ceil(globalLo / step) * step; v <= globalHi + 1e-9; v += step) {
       const x = xToPx(v);
+      const isBase = Math.abs(v - 1.0) < 1e-6;
       svg.appendChild(ns('line', {x1: x, y1: yToPx(0), x2: x, y2: yToPx(0) + 2, stroke: 'var(--muted)', 'stroke-width': 0.5}));
-      const tt = ns('text', {x: x, y: yToPx(0) + 10, 'text-anchor': 'middle', 'font-size': 7, fill: 'var(--muted)', 'font-family': 'inherit'});
-      tt.textContent = v.toFixed(0);
+      const tt = ns('text', {
+        x: x, y: yToPx(0) + 11,
+        'text-anchor': 'middle',
+        'font-size': 7,
+        fill: isBase ? 'var(--accent)' : 'var(--muted)',
+        'font-family': 'inherit',
+        'font-weight': isBase ? '700' : '400',
+      });
+      tt.textContent = v.toFixed(1) + '×';
       svg.appendChild(tt);
-    });
+    }
+
     cell.appendChild(svg);
     grid.appendChild(cell);
   });
