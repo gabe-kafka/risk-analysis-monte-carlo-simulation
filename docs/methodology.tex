@@ -1,0 +1,95 @@
+% Monte Carlo Schedule Risk Simulation — Methodology
+% Compile: pdflatex methodology.tex
+\documentclass[10pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{libertine}      % proportional body (Linux Libertine)
+\usepackage[scaled=0.85]{beramono}  % dense mono for headings
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage{parskip}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\definecolor{muted}{HTML}{6B6B6B}
+\definecolor{text}{HTML}{1A1A1A}
+
+% Section headings: mono, uppercase, letterspaced, muted, tight
+\titleformat{\section}
+  {\normalfont\ttfamily\footnotesize\bfseries\color{muted}\MakeUppercase}
+  {}{0pt}{}
+\titlespacing*{\section}{0pt}{8pt}{2pt}
+
+% Tight list spacing
+\setlist[enumerate]{leftmargin=*,itemsep=1pt,topsep=2pt,parsep=0pt}
+\setlist[itemize]{leftmargin=*,itemsep=1pt,topsep=2pt,parsep=0pt}
+
+% Cockpit footer: doc ID | rev | page
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{\ttfamily\scriptsize\color{muted}DOC-MC-METH-01}
+\fancyfoot[C]{\ttfamily\scriptsize\color{muted}REV 2026-04-09}
+\fancyfoot[R]{\ttfamily\scriptsize\color{muted}PAGE \thepage}
+
+% No title decoration — dense header block
+\begin{document}
+
+\noindent
+{\ttfamily\small\bfseries MONTE CARLO SCHEDULE RISK SIMULATION \textbar{} METHODOLOGY}\\[2pt]
+{\ttfamily\scriptsize\color{muted}CPM FORWARD PASS \textbar{} TRIANGULAR DURATION DISTRIBUTIONS \textbar{} N=10{,}000 \textbar{} OPRA-COMPATIBLE}
+
+\vspace{6pt}
+\hrule height 0.4pt
+\vspace{6pt}
+
+\section{Setup}
+The project is a directed acyclic graph of activities $\mathcal{A} = \{1, 2, \ldots, n\}$ with finish-to-start, zero-lag precedence. For each activity $i$, $P(i) \subseteq \mathcal{A}$ is its set of immediate predecessors and $d_i > 0$ its baseline duration in working days.
+
+\section{Deterministic Baseline (CPM Forward Pass)}
+Given a topological ordering of $\mathcal{A}$, the Critical Path Method forward pass computes early start ($ES_i$) and early finish ($EF_i$) recursively:
+\begin{equation}
+ES_i = \begin{cases} 0 & P(i) = \emptyset \\ \displaystyle\max_{j \in P(i)} EF_j & \text{otherwise} \end{cases}, \qquad EF_i = ES_i + d_i, \qquad T^{\text{det}} = \max_{i \in \mathcal{A}} EF_i.
+\end{equation}
+
+\section{Duration Uncertainty Model}
+Each activity $i$ receives three multiplicative factors $(\alpha_i, \mu_i, \beta_i)$ with $0 < \alpha_i \le \mu_i \le \beta_i$ (optimistic, most-likely, pessimistic), producing a three-point estimate $(a_i, m_i, b_i) = (\alpha_i d_i,\, \mu_i d_i,\, \beta_i d_i)$. Activity duration is modeled as a triangular random variable $D_i \sim \mathrm{Tri}(a_i, m_i, b_i)$ with density
+\begin{equation}
+f_{D_i}(x) =
+\begin{cases}
+\dfrac{2(x - a_i)}{(b_i - a_i)(m_i - a_i)} & a_i \le x \le m_i, \\[0.25em]
+\dfrac{2(b_i - x)}{(b_i - a_i)(b_i - m_i)} & m_i < x \le b_i, \\[0.25em]
+0 & \text{otherwise.}
+\end{cases}
+\end{equation}
+Risk register findings are encoded into the distribution width: activities with elevated exposure receive wider pessimistic tails ($\beta_i$). No discrete risk events are modeled separately.
+
+\section{Monte Carlo Procedure}
+For $N$ iterations (default $N = 10{,}000$, fixed seed for reproducibility), at each $k \in \{1, \ldots, N\}$:
+\begin{enumerate}
+    \item Sample independent durations $d_i^{(k)} \sim \mathrm{Tri}(a_i, m_i, b_i)$ for every $i \in \mathcal{A}$.
+    \item Run the CPM forward pass with the sampled durations to obtain $EF_i^{(k)}$.
+    \item Record the project finish $T^{(k)} = \max_{i \in \mathcal{A}} EF_i^{(k)}$.
+\end{enumerate}
+
+\section{Output Statistics}
+The empirical distribution $\{T^{(k)}\}_{k=1}^{N}$ yields
+\begin{equation}
+\bar{T} = \frac{1}{N}\sum_{k=1}^{N} T^{(k)}, \qquad
+s_T^2 = \frac{1}{N}\sum_{k=1}^{N}\bigl(T^{(k)} - \bar{T}\bigr)^2, \qquad
+\hat{F}_T(t) = \frac{1}{N}\sum_{k=1}^{N} \mathbf{1}\{T^{(k)} \le t\}.
+\end{equation}
+Confidence levels are reported as percentiles $P_p = \hat{F}_T^{-1}(p/100)$ for $p \in \{5, 10, \ldots, 95\}$, with P50, P80, and P90 highlighted on the histogram and S-curve (CDF). The confidence level of the deterministic finish is $\hat{F}_T(T^{\text{det}})$.
+
+\section{Activity Sensitivity (Tornado)}
+For each activity $i$, the driver effect is quantified by the Spearman rank correlation between its sampled duration and the project finish, computed across the $N$ iterations:
+\begin{equation}
+\rho_i = 1 - \frac{6 \sum_{k=1}^{N}\bigl(R\bigl(d_i^{(k)}\bigr) - R\bigl(T^{(k)}\bigr)\bigr)^2}{N(N^2 - 1)},
+\end{equation}
+where $R(\cdot)$ denotes the rank within the $N$-sample. Activities are ranked by $|\rho_i|$ and displayed as a tornado chart, identifying the dominant schedule drivers for risk response prioritization.
+
+\end{document}
