@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Monte Carlo Schedule Risk Simulation — All-In-One</title>
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --surface: #F5F5F5;
+    --text: #1A1A1A;
+    --muted: #6B6B6B;
+    --dim: #505050;
+    --border: #D4D4D4;
+    --subtle: #E8E8E8;
+    --accent: #0057FF;
+    --red: #DC2626;
+    --amber: #D97706;
+    --green: #16A34A;
+    --cyan: #06B6D4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0A0A0A;
+      --surface: #141414;
+      --text: #E5E5E5;
+      --muted: #808080;
+      --dim: #606060;
+      --border: #2A2A2A;
+      --subtle: #1A1A1A;
+      --accent: #3B82F6;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+  }
+
+  /* ── TOP BAR ─────────────────────────────── */
+  #topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    height: 28px;
+  }
+  #topbar .brand { font-weight: 700; color: var(--text); }
+  #topbar .brand .dim { color: var(--muted); font-weight: 400; }
+  #topbar .scene-indicator { text-align: center; letter-spacing: 0.15em; }
+  #topbar .scene-indicator strong { color: var(--accent); font-weight: 700; }
+  #topbar .right { text-align: right; display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+  #topbar button {
+    font-family: inherit;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  #topbar button:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── SCENES ──────────────────────────────── */
+  #scenes { position: relative; overflow: hidden; }
+  .scene {
+    position: absolute;
+    inset: 0;
+    padding: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease-out;
+    overflow: auto;
+  }
+  .scene.active { opacity: 1; pointer-events: auto; }
+
+  /* ── SCENE 1: INTRO ──────────────────────── */
+  #scene-1 { padding: 0; display: grid; }
+  .intro-main {
+    display: grid;
+    align-items: center;
+    justify-items: start;
+    padding: 6% 8%;
+  }
+  .intro-sup {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 14px;
+  }
+  .intro-title {
+    font-size: 54px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .intro-title .accent { color: var(--accent); }
+  .intro-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 720px;
+    margin-bottom: 24px;
+  }
+  .intro-badges {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .intro-badge { background: var(--bg); padding: 8px 14px; }
+  .intro-badge .lbl {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+  }
+  .intro-badge .val {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--text);
+    display: block;
+    margin-top: 3px;
+  }
+  .intro-hint {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    display: inline-block;
+  }
+  .intro-hint kbd {
+    font-family: inherit;
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    color: var(--accent);
+    margin: 0 2px;
+  }
+
+  /* ── SCENE 2: SOURCE ─────────────────────── */
+  .source-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    height: 100%;
+  }
+  .file-tree { background: var(--bg); padding: 10px; overflow-y: auto; }
+  .tree-header {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .file-tree ul { list-style: none; font-size: 10px; }
+  .file-tree li { padding: 3px 6px; cursor: pointer; color: var(--text); }
+  .file-tree li.dir {
+    color: var(--muted);
+    margin-top: 8px;
+    margin-bottom: 2px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+    padding-left: 0;
+  }
+  .file-tree li.file:hover { background: var(--subtle); }
+  .file-tree li.file.active { background: var(--subtle); color: var(--accent); border-left: 2px solid var(--accent); padding-left: 4px; }
+  .file-tree li.file::before { content: "· "; color: var(--muted); }
+  .source-viewer {
+    background: var(--bg);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+  .source-header {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+  }
+  .file-path { color: var(--text); font-weight: 700; }
+  .file-info { color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .source-content {
+    overflow: auto;
+    padding: 6px 0;
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+    font-family: inherit;
+    white-space: pre;
+    tab-size: 4;
+  }
+  .src-line { display: block; padding: 0 12px; }
+  .src-line:hover { background: var(--subtle); }
+  .src-lineno {
+    display: inline-block;
+    width: 42px;
+    color: var(--muted);
+    text-align: right;
+    padding-right: 10px;
+    user-select: none;
+    border-right: 1px solid var(--border);
+    margin-right: 12px;
+  }
+
+  /* ── SCENE 3: DATA ───────────────────────── */
+  .data-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    height: calc(100% - 40px);
+  }
+  .data-panel {
+    background: var(--bg);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+  .data-panel .panel-label { padding: 6px 8px; }
+  .data-table-wrap { overflow: auto; }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+  .data-table thead th {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-align: left;
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+  }
+  .data-table tbody td {
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--subtle);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .data-table tbody tr:hover td { background: var(--subtle); }
+  .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table td.wbs-swatch {
+    width: 4px; padding: 0;
+  }
+  .data-table td.wbs-swatch div { width: 4px; height: 100%; min-height: 14px; }
+  .data-actions {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0 0 0;
+    align-items: center;
+  }
+  .data-actions button {
+    font-family: inherit;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .data-actions button:hover { background: var(--subtle); border-color: var(--accent); color: var(--accent); }
+  .data-actions .status {
+    margin-left: auto;
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .data-actions .status.ok { color: var(--green); }
+  .data-actions .status.err { color: var(--red); }
+
+  /* ── SCENE 4 & 5 ─────────────────────────── */
+  #scene-4, #scene-5 {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 12px;
+  }
+  .sidebar-note {
+    padding: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    overflow-y: auto;
+  }
+  .sidebar-note h3 {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+  }
+  .sidebar-note h3:not(:first-child) { margin-top: 14px; }
+  .sidebar-note p {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .sidebar-note .eq {
+    padding: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    font-size: 10px;
+    line-height: 1.5;
+    color: var(--text);
+    margin: 8px 0;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* ── SCENE 5: UNCERTAINTY dist grid ─────── */
+  #scene-5 .dist-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .dist-cell { background: var(--bg); padding: 6px; position: relative; }
+  .dist-cell .aid {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .dist-cell .params { font-size: 8px; color: var(--dim); margin-top: 2px; }
+  .dist-cell svg { margin-top: 4px; }
+
+  /* ── SCENE 6: SIMULATION ─────────────────── */
+  #scene-6 {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 8px;
+  }
+  .kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .kpi { background: var(--bg); padding: 5px 8px; }
+  .kpi .label {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: block;
+  }
+  .kpi .value {
+    font-size: 18px;
+    color: var(--text);
+    font-weight: 300;
+    display: block;
+    margin-top: 2px;
+  }
+  .kpi .sub { font-size: 8px; color: var(--dim); display: block; margin-top: 1px; }
+  .sim-main {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .panel { background: var(--bg); padding: 6px 8px; overflow: hidden; }
+  .panel-label {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-label .mini-btn {
+    font-family: inherit;
+    font-size: 8px;
+    padding: 2px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .panel-label .mini-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .gantt-panel { overflow-y: auto; }
+
+  /* ── SCENE 7: RESULTS ────────────────────── */
+  #scene-7 {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 8px;
+  }
+  .export-row {
+    display: flex;
+    gap: 6px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    align-items: center;
+  }
+  .export-row .lbl {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-right: 6px;
+  }
+  .export-row button {
+    font-family: inherit;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .export-row button:hover { border-color: var(--accent); color: var(--accent); }
+  .results-main {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .tornado-panel { overflow-y: auto; padding: 8px 12px; background: var(--bg); }
+  .summary-panel { padding: 8px 12px; background: var(--bg); overflow-y: auto; }
+  .summary-panel h3 {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+  }
+  .summary-panel h3:not(:first-child) { margin-top: 16px; }
+  .percentile-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+  }
+  .percentile-table th, .percentile-table td {
+    padding: 3px 6px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+  }
+  .percentile-table th {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-align: right;
+    font-weight: 400;
+  }
+  .percentile-table th:first-child, .percentile-table td:first-child {
+    text-align: left;
+    color: var(--muted);
+  }
+
+  /* ── SVG styles ──────────────────────────── */
+  svg { display: block; }
+  .axis-label { font-size: 9px; fill: var(--muted); font-family: inherit; }
+  .activity-row:hover rect.bg { fill: var(--subtle); }
+  .activity-label { font-size: 9px; fill: var(--text); font-family: inherit; dominant-baseline: middle; }
+  .activity-id { font-size: 8px; fill: var(--muted); font-family: inherit; dominant-baseline: middle; }
+  .activity-bar-det { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 2; }
+  .activity-bar-active { opacity: 0.92; }
+  .activity-bar-ghost { fill: var(--accent); opacity: 0.04; }
+  .wbs-divider { stroke: var(--border); stroke-width: 0.5; }
+  .triangle-fill { fill: var(--accent); opacity: 0.15; }
+  .triangle-stroke { fill: none; stroke: var(--accent); stroke-width: 0.8; }
+  .triangle-mode { stroke: var(--muted); stroke-width: 0.5; stroke-dasharray: 1 1; }
+  .triangle-sample { stroke: var(--red); stroke-width: 1.5; }
+  .finish-line-det { stroke: var(--green); stroke-width: 1.5; stroke-dasharray: 3 3; }
+  .finish-line-current { stroke: var(--accent); stroke-width: 1.5; }
+  .hist-bar { fill: var(--accent); opacity: 0.7; }
+  .scurve-line { fill: none; stroke: var(--accent); stroke-width: 1.5; }
+  .p-label { font-size: 8px; font-family: inherit; }
+  .tornado-bar { opacity: 0.85; }
+  .tornado-label { font-size: 9px; fill: var(--text); font-family: inherit; dominant-baseline: middle; }
+  .tornado-value { font-size: 9px; font-family: inherit; dominant-baseline: middle; }
+
+  /* ── BOTTOM BAR ──────────────────────────── */
+  #bottombar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 6px 12px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+    gap: 12px;
+    min-height: 36px;
+  }
+  .scene-nav {
+    display: flex;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .scene-nav button {
+    font-family: inherit;
+    font-size: 9px;
+    padding: 5px 10px;
+    border: none;
+    background: var(--bg);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .scene-nav button:hover { color: var(--text); }
+  .scene-nav button.active { color: var(--accent); background: var(--subtle); }
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .controls button {
+    font-family: inherit;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .controls button:hover { background: var(--subtle); }
+  .controls button.active { border-color: var(--accent); color: var(--accent); }
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+    border-right: 1px solid var(--border);
+    height: 24px;
+  }
+  .control-group:last-child { border-right: none; }
+  label.ctl {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input[type=range] { width: 80px; height: 4px; accent-color: var(--accent); }
+  .readout {
+    font-size: 9px;
+    color: var(--text);
+    min-width: 40px;
+    text-align: right;
+  }
+  .status-left {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══════════════════════════════ -->
+<div id="topbar">
+  <div class="brand">MONTE CARLO <span class="dim">· SCHEDULE RISK · ALL-IN-ONE</span></div>
+  <div class="scene-indicator">SCENE <strong id="scene-num">01</strong> / 07 · <span id="scene-title">INTRO</span></div>
+  <div class="right">
+    <span id="topbar-project">SUMMIT TOWER · 41 FLOORS · NEWARK NJ</span>
+    <button id="btn-fullscreen">⛶ FULL</button>
+  </div>
+</div>
+
+<!-- ═══ SCENES ════════════════════════════════ -->
+<main id="scenes">
+
+  <!-- ── SCENE 1: INTRO ────────────────────── -->
+  <section id="scene-1" class="scene active">
+    <div class="intro-main">
+      <div class="intro-sup">RISK ANALYSIS · OPRA-COMPATIBLE METHODOLOGY · ALL-IN-ONE</div>
+      <h1 class="intro-title">MONTE CARLO<br>SCHEDULE <span class="accent">RISK</span></h1>
+      <p class="intro-subtitle">
+        Three-point triangular duration distributions over a 44-activity CPM network.
+        Sampled durations propagate through a forward pass; the maximum early-finish
+        defines the project completion for that iteration. The entire repository —
+        methodology, Python source, data, results — is embedded in this single HTML file.
+      </p>
+      <div class="intro-badges">
+        <div class="intro-badge"><span class="lbl">Iterations</span><span class="val">10,000</span></div>
+        <div class="intro-badge"><span class="lbl">Activities</span><span class="val" id="intro-n">44</span></div>
+        <div class="intro-badge"><span class="lbl">WBS Groups</span><span class="val">9</span></div>
+        <div class="intro-badge"><span class="lbl">Risks</span><span class="val">15</span></div>
+        <div class="intro-badge"><span class="lbl">Baseline T</span><span class="val" id="intro-det">—</span></div>
+        <div class="intro-badge"><span class="lbl">Repo Files</span><span class="val" id="intro-files">—</span></div>
+      </div>
+      <div class="intro-hint">PRESS <kbd>→</kbd> TO ADVANCE · <kbd>SPACE</kbd> TO PLAY · <kbd>F</kbd> FULLSCREEN · <kbd>1-7</kbd> JUMP</div>
+    </div>
+  </section>
+
+  <!-- ── SCENE 2: SOURCE ───────────────────── -->
+  <section id="scene-2" class="scene">
+    <div class="source-layout">
+      <aside class="file-tree">
+        <div class="tree-header">REPO · risk-analysis-monte-carlo-simulation</div>
+        <ul id="file-list"></ul>
+      </aside>
+      <div class="source-viewer">
+        <div class="source-header">
+          <span class="file-path" id="source-path">—</span>
+          <span class="file-info" id="source-info">—</span>
+        </div>
+        <pre class="source-content" id="source-content"></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCENE 3: DATA ─────────────────────── -->
+  <section id="scene-3" class="scene">
+    <div class="data-layout">
+      <div class="data-panel">
+        <div class="panel-label">
+          <span>SCHEDULE · ACTIVITY NETWORK (<span id="sched-count">44</span>)</span>
+          <button class="mini-btn" id="upload-schedule">↑ UPLOAD CSV</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="schedule-table"></table>
+        </div>
+      </div>
+      <div class="data-panel">
+        <div class="panel-label">
+          <span>RISK PARAMETERS · THREE-POINT FACTORS (<span id="risk-count">44</span>)</span>
+          <button class="mini-btn" id="upload-risk">↑ UPLOAD CSV</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table" id="risk-table"></table>
+        </div>
+      </div>
+    </div>
+    <div class="data-actions">
+      <button id="reset-data">RESET TO SUMMIT TOWER DEFAULTS</button>
+      <input type="file" id="file-schedule-input" accept=".csv" style="display:none;">
+      <input type="file" id="file-risk-input" accept=".csv" style="display:none;">
+      <span class="status ok" id="data-status">DEFAULTS LOADED · SUMMIT TOWER</span>
+    </div>
+  </section>
+
+  <!-- ── SCENE 4: BASELINE ─────────────────── -->
+  <section id="scene-4" class="scene">
+    <div class="panel gantt-panel" style="border: 1px solid var(--border);">
+      <div class="panel-label">
+        <span>DETERMINISTIC BASELINE GANTT · CPM FORWARD PASS</span>
+        <span id="scene4-finish">T_DET = — DAYS</span>
+      </div>
+      <svg id="gantt-baseline" width="100%" height="720"></svg>
+    </div>
+    <div class="sidebar-note">
+      <h3>01 · THE SETUP</h3>
+      <p>The project is a directed acyclic graph of <strong>n</strong> activities with finish-to-start, zero-lag precedence. Each activity has a baseline duration d<sub>i</sub> and a set of predecessors P(i).</p>
+      <h3>02 · THE FORWARD PASS</h3>
+      <p>Given a topological ordering, CPM computes early start (ES) and early finish (EF) recursively:</p>
+      <div class="eq">ES_i = max(EF_j : j ∈ P(i))
+EF_i = ES_i + d_i
+T_det = max(EF_i)</div>
+      <h3>03 · WHY DETERMINISTIC ISN'T ENOUGH</h3>
+      <p>The baseline tells us <em>what would happen</em> if every activity took exactly its estimated duration. But durations are uncertain — weather, labor, permits, groundwater, design changes. We need a probabilistic view.</p>
+      <p style="color: var(--accent); margin-top: 18px;">→ NEXT: HOW WE MODEL THAT UNCERTAINTY</p>
+    </div>
+  </section>
+
+  <!-- ── SCENE 5: UNCERTAINTY ──────────────── -->
+  <section id="scene-5" class="scene">
+    <div style="overflow: auto; border: 1px solid var(--border); padding: 8px;">
+      <div class="panel-label" style="margin-bottom: 10px;">
+        <span>TRIANGULAR DURATION DISTRIBUTIONS · ONE PER ACTIVITY</span>
+        <span>FILL = PDF · DASHED = MODE</span>
+      </div>
+      <div class="dist-grid" id="dist-grid"></div>
+    </div>
+    <div class="sidebar-note">
+      <h3>01 · THREE-POINT ESTIMATES</h3>
+      <p>Each activity gets three multiplicative factors from the risk register — optimistic, most-likely, pessimistic:</p>
+      <div class="eq">(a_i, m_i, b_i) = (α·d_i, μ·d_i, β·d_i)</div>
+      <h3>02 · THE TRIANGULAR DENSITY</h3>
+      <p>Activity duration D_i is modeled as a triangular random variable:</p>
+      <div class="eq">D_i ~ Tri(a_i, m_i, b_i)
+
+         2(x - a)
+f(x) = ──────────       a ≤ x ≤ m
+       (b-a)(m-a)
+
+         2(b - x)
+f(x) = ──────────       m &lt; x ≤ b
+       (b-a)(b-m)</div>
+      <h3>03 · RISK REGISTER → DISTRIBUTION</h3>
+      <p>Identified risks are encoded into the distribution <em>width</em>: activities exposed to multiple risks get wider pessimistic tails (higher β). No discrete risk events are modeled separately.</p>
+      <p style="color: var(--muted); font-size: 10px; margin-top: 8px;">e.g. A402 Pile Installation: α=0.60 β=2.20 (5 risks)</p>
+      <p style="color: var(--accent); margin-top: 18px;">→ NEXT: SAMPLE 10,000 TIMES</p>
+    </div>
+  </section>
+
+  <!-- ── SCENE 6: SIMULATION ───────────────── -->
+  <section id="scene-6" class="scene">
+    <div class="kpi-strip">
+      <div class="kpi"><span class="label">Iterations</span><span class="value" id="kpi-iter">0</span><span class="sub">/ 10,000</span></div>
+      <div class="kpi"><span class="label">Current T</span><span class="value" id="kpi-current">—</span><span class="sub">working days</span></div>
+      <div class="kpi"><span class="label">T deterministic</span><span class="value" id="kpi-det">—</span><span class="sub">baseline</span></div>
+      <div class="kpi"><span class="label">Mean</span><span class="value" id="kpi-mean">—</span><span class="sub">days</span></div>
+      <div class="kpi"><span class="label">Std Dev</span><span class="value" id="kpi-std">—</span><span class="sub">days</span></div>
+      <div class="kpi"><span class="label">P50</span><span class="value" id="kpi-p50">—</span><span class="sub">median</span></div>
+      <div class="kpi"><span class="label">P80</span><span class="value" id="kpi-p80">—</span><span class="sub">80% conf</span></div>
+      <div class="kpi"><span class="label">P90</span><span class="value" id="kpi-p90">—</span><span class="sub">90% conf</span></div>
+    </div>
+    <div class="sim-main">
+      <div class="panel gantt-panel">
+        <div class="panel-label">
+          <span>LIVE GANTT · EACH ITERATION RESAMPLES DURATIONS, RE-RUNS FORWARD PASS</span>
+          <span>DET (DASH) · CURRENT (SOLID) · GHOSTS (FAINT)</span>
+        </div>
+        <svg id="gantt-live" width="100%" height="720"></svg>
+      </div>
+      <div class="panel" style="overflow-y: auto;">
+        <div class="panel-label">
+          <span>HISTOGRAM OF T</span>
+          <span>N=<span id="hist-n">0</span></span>
+        </div>
+        <svg id="histogram" width="100%" height="200"></svg>
+        <div class="panel-label" style="margin-top:10px;">
+          <span>S-CURVE (CDF)</span>
+          <span>P50 / P80 / P90</span>
+        </div>
+        <svg id="scurve" width="100%" height="200"></svg>
+        <div class="panel-label" style="margin-top:10px;">
+          <span>HOVERED ACTIVITY</span>
+          <span id="detail-label">— hover —</span>
+        </div>
+        <svg id="detail" width="100%" height="130"></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SCENE 7: RESULTS ──────────────────── -->
+  <section id="scene-7" class="scene">
+    <div class="kpi-strip">
+      <div class="kpi"><span class="label">Iterations</span><span class="value" id="res-iter">—</span><span class="sub">total</span></div>
+      <div class="kpi"><span class="label">T deterministic</span><span class="value" id="res-det">—</span><span class="sub">days</span></div>
+      <div class="kpi"><span class="label">Det Confidence</span><span class="value" id="res-conf">—</span><span class="sub">percentile</span></div>
+      <div class="kpi"><span class="label">Mean</span><span class="value" id="res-mean">—</span><span class="sub">days</span></div>
+      <div class="kpi"><span class="label">Std Dev</span><span class="value" id="res-std">—</span><span class="sub">days</span></div>
+      <div class="kpi"><span class="label">P50</span><span class="value" id="res-p50">—</span><span class="sub">median</span></div>
+      <div class="kpi"><span class="label">P80</span><span class="value" id="res-p80">—</span><span class="sub">80% conf</span></div>
+      <div class="kpi"><span class="label">P90</span><span class="value" id="res-p90">—</span><span class="sub">90% conf</span></div>
+    </div>
+    <div class="export-row">
+      <span class="lbl">EXPORT</span>
+      <button onclick="exportFinishes()">↓ FINISHES.CSV</button>
+      <button onclick="exportPercentiles()">↓ PERCENTILES.CSV</button>
+      <button onclick="exportTornado()">↓ TORNADO.CSV</button>
+      <button onclick="exportReport()">↓ REPORT.JSON</button>
+      <button onclick="exportSVG('histogram','histogram.svg')">↓ HISTOGRAM.SVG</button>
+      <button onclick="exportSVG('scurve','scurve.svg')">↓ SCURVE.SVG</button>
+      <button onclick="exportSVG('tornado','tornado.svg')">↓ TORNADO.SVG</button>
+    </div>
+    <div class="results-main">
+      <div class="summary-panel">
+        <h3>PERCENTILE TABLE</h3>
+        <table class="percentile-table" id="percentile-table">
+          <thead><tr><th>PERCENTILE</th><th>DAYS</th><th>Δ FROM DET</th><th>Δ %</th></tr></thead>
+          <tbody id="percentile-body"></tbody>
+        </table>
+        <h3>INTERPRETATION</h3>
+        <p style="font-size:10px;line-height:1.6;color:var(--text);">
+          The <strong style="color:var(--green);">deterministic baseline</strong> sits at only
+          <strong id="interp-conf">—</strong> confidence, meaning a plan built on it has that much chance of
+          delivering on time or early. For commitments use the
+          <strong style="color:var(--accent);">P80 target</strong> of
+          <strong id="interp-p80">—</strong> days.
+        </p>
+        <p style="font-size:10px;line-height:1.6;color:var(--text);margin-top:8px;">
+          The standard deviation of
+          <strong id="interp-std">—</strong> days reflects the compounding
+          effect of risks propagating through the CPM network.
+        </p>
+      </div>
+      <div class="tornado-panel">
+        <div class="panel-label">
+          <span>TORNADO · ACTIVITY SENSITIVITY (SPEARMAN RANK CORRELATION)</span>
+          <span>TOP 15 DRIVERS</span>
+        </div>
+        <svg id="tornado" width="100%" height="700"></svg>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ BOTTOM BAR ════════════════════════════ -->
+<div id="bottombar">
+  <div class="scene-nav">
+    <button data-scene="1" class="active">01 · INTRO</button>
+    <button data-scene="2">02 · SOURCE</button>
+    <button data-scene="3">03 · DATA</button>
+    <button data-scene="4">04 · BASELINE</button>
+    <button data-scene="5">05 · UNCERTAINTY</button>
+    <button data-scene="6">06 · SIMULATION</button>
+    <button data-scene="7">07 · RESULTS</button>
+  </div>
+  <div class="status-left" id="status-left">READY</div>
+  <div class="controls" id="sim-controls" style="display:none;">
+    <div class="control-group">
+      <button id="btn-play">▶ PLAY</button>
+      <button id="btn-step">STEP</button>
+      <button id="btn-reset">RESET</button>
+    </div>
+    <div class="control-group">
+      <label class="ctl">SPEED</label>
+      <input type="range" id="speed" min="1" max="500" value="60">
+      <span class="readout" id="speed-readout">60/s</span>
+    </div>
+    <div class="control-group">
+      <label class="ctl">GHOSTS</label>
+      <input type="range" id="ghost-count" min="0" max="300" value="80">
+      <span class="readout" id="ghost-readout">80</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ EMBEDDED REPO FILES ═══════════════════ -->
+<script type="text/plain" data-file="README.md">
+# Monte Carlo Schedule Risk Simulation
+
+A Python-based Monte Carlo schedule risk simulator that matches **Primavera Risk Analysis (OPRA)** methodology. Runs three-point triangular duration distributions on a CPM activity network and produces standard risk analysis outputs.
+
+## What It Does
+
+1. Reads a deterministic CPM schedule (activity network with durations and FS predecessors)
+2. Renders a Gantt chart of the deterministic baseline
+3. Applies triangular duration distributions (optimistic / most likely / pessimistic) per activity
+4. Runs N iterations of the CPM forward pass with randomly sampled durations
+5. Produces: histogram, S-curve (CDF), tornado sensitivity chart, and a formatted Excel workbook with results
+
+## Quick Start
+
+```bash
+pip install -r requirements.txt
+
+# Step 1: Render the deterministic Gantt chart
+python3 scripts/render_gantt.py \
+  --schedule data/example/summit-tower-activities.csv
+
+# Step 2: Create the Excel workbook from your schedule + risk parameters
+python3 scripts/monte_carlo.py \
+  --schedule data/example/summit-tower-activities.csv \
+  --risk-params data/example/summit-tower-risk-params.csv \
+  --init
+
+# Step 3: Review/edit the "Duration Uncertainty" sheet in Excel
+# Adjust optimistic/pessimistic factors based on your risk register
+
+# Step 4: Run the simulation
+python3 scripts/monte_carlo.py \
+  --schedule data/example/summit-tower-activities.csv \
+  --workbook data/example/summit-tower-activities-monte-carlo.xlsx
+```
+
+All outputs land in `outputs/`. The Excel workbook's Results and Sensitivity sheets are updated in place.
+
+## Input Format
+
+### Schedule CSV
+
+Standard CPM activity network. All relationships are finish-to-start, zero lag.
+
+```csv
+wbs,wbs_name,activity_id,activity_name,duration_days,predecessors
+1.0,Pre-Construction,A101,Project kickoff,5,
+1.0,Pre-Construction,A102,Design coordination,60,A101
+1.0,Pre-Construction,A103,Permit submission,30,A102
+```
+
+- `predecessors` — comma-separated activity IDs (FS zero-lag)
+- Activities with no predecessors are project starts
+
+### Risk Parameters CSV
+
+Three-point estimates as multipliers on the baseline duration.
+
+```csv
+activity_id,optimistic_factor,most_likely_factor,pessimistic_factor,notes
+A101,0.80,1.00,1.40,Kickoff — low variance
+A102,0.85,1.00,1.50,Design coordination — scope creep risk
+A103,0.90,1.00,1.30,Permit submission — mostly administrative
+```
+
+- `optimistic_factor` — best case (e.g., 0.80 = 80% of baseline)
+- `most_likely_factor` — typically 1.00
+- `pessimistic_factor` — worst case (e.g., 2.00 = 200% of baseline)
+- `notes` — trace which risks from your register justify the distribution width
+
+## Outputs
+
+| Output | Description |
+|---|---|
+| `gantt.png` | Deterministic CPM schedule Gantt chart |
+| `monte-carlo-histogram.png` | Distribution of project finish dates with P50/P80/P90 markers |
+| `monte-carlo-scurve.png` | Cumulative probability curve (CDF) with confidence annotations |
+| `monte-carlo-tornado.png` | Top 15 activities by Spearman rank correlation with finish |
+| Excel "Results" sheet | Full percentile table (P5 through P95), mean, std dev, min/max |
+| Excel "Sensitivity" sheet | All activities ranked by correlation with interpretation labels |
+
+## How It Matches OPRA
+
+This tool replicates the core methodology of Oracle Primavera Risk Analysis:
+
+- **Duration uncertainty** modeled as three-point triangular distributions per activity
+- **CPM forward pass** computed each iteration (same as OPRA's schedule engine)
+- **No discrete risk events** — risk register findings are baked into the distribution parameters (wider pessimistic tails on risk-exposed activities)
+- **Standard outputs** — histogram, S-curve, tornado chart are the same outputs OPRA produces
+
+The key difference: assumptions are fully transparent in a single Excel workbook rather than buried in software dialogs.
+
+## Example: Summit Tower
+
+The `data/example/` directory contains a complete worked example — a 41-story, 489-ft residential tower in Newark, NJ with 44 activities and 15 identified risks across 9 categories. The risk register findings are reflected in the duration distributions.
+
+## Dependencies
+
+- Python 3.10+
+- numpy
+- matplotlib
+- openpyxl
+</script>
+
+<script type="text/plain" data-file="Makefile">
+SCHEDULE = data/example/summit-tower-activities.csv
+RISK_PARAMS = data/example/summit-tower-risk-params.csv
+WORKBOOK = data/example/summit-tower-activities-monte-carlo.xlsx
+ITERATIONS = 10000
+
+all: gantt workbook simulate summary
+	@echo ""
+	@echo "Done. All outputs in outputs/"
+	@echo "  Combined: outputs/summary.png"
+
+gantt:
+	python3 scripts/render_gantt.py --schedule $(SCHEDULE)
+
+workbook:
+	python3 scripts/monte_carlo.py --schedule $(SCHEDULE) --risk-params $(RISK_PARAMS) --init
+
+simulate:
+	python3 scripts/monte_carlo.py --schedule $(SCHEDULE) --workbook $(WORKBOOK) -n $(ITERATIONS)
+
+summary:
+	python3 scripts/combine_outputs.py
+
+clean:
+	rm -f outputs/gantt.png outputs/monte-carlo-*.png outputs/summary.png $(WORKBOOK)
+
+.PHONY: all gantt workbook simulate summary clean
+</script>
+
+<script type="text/plain" data-file="requirements.txt">
+numpy
+matplotlib
+openpyxl
+</script>
+
+<script type="text/plain" data-file="data/example/summit-tower-activities.csv">
+wbs,wbs_name,activity_id,activity_name,duration_days,predecessors
+1.0,Pre-Construction Phase,A101,Project kickoff & team mobilization,5,
+1.0,Pre-Construction Phase,A102,Design development & coordination,60,A101
+1.0,Pre-Construction Phase,A103,Permit submission,30,A102
+1.0,Pre-Construction Phase,A104,Permit approval process,45,A103
+1.0,Pre-Construction Phase,A105,Procurement planning,20,A102
+1.0,Pre-Construction Phase,A106,Contractor mobilization,10,A104
+2.0,Site Preparation,A201,Site survey & layout,10,A106
+2.0,Site Preparation,A202,Utility disconnection/relocation,20,A201
+2.0,Site Preparation,A203,Demolition,25,A202
+2.0,Site Preparation,A204,Site clearing & grading,20,A203
+3.0,Excavation & Earth Retention,A301,Install shoring system,40,A204
+3.0,Excavation & Earth Retention,A302,Bulk excavation,50,A301
+3.0,Excavation & Earth Retention,A303,Dewatering system installation,15,A301
+3.0,Excavation & Earth Retention,A304,Excavation to final depth,15,"A302,A303"
+4.0,Foundation Construction,A401,Pile mobilization,10,"A304,A105"
+4.0,Foundation Construction,A402,Pile installation,60,A401
+4.0,Foundation Construction,A403,Pile load testing,20,A402
+4.0,Foundation Construction,A404,Excavation leveling & prep,15,A304
+4.0,Foundation Construction,A405,Formwork & reinforcement (mat),20,"A403,A404"
+4.0,Foundation Construction,A406,Concrete pour (mat foundation),10,A405
+4.0,Foundation Construction,A407,Curing & waterproofing,15,A406
+5.0,Superstructure,A501,Tower crane installation,15,A407
+5.0,Superstructure,A502,Structural core construction,60,A501
+5.0,Superstructure,A503,Floor cycle (1-10),50,A502
+5.0,Superstructure,A504,Floor cycle (11-20),50,A503
+5.0,Superstructure,A505,Floor cycle (21-30),50,A504
+5.0,Superstructure,A506,Floor cycle (31-41),60,A505
+5.0,Superstructure,A507,Structural topping out,15,A506
+6.0,Building Enclosure,A601,Curtain wall fabrication,90,A502
+6.0,Building Enclosure,A602,Curtain wall installation (lower floors),60,A503
+6.0,Building Enclosure,A603,Curtain wall installation (upper floors),60,"A506,A601"
+7.0,MEP Systems,A701,MEP rough-in (lower floors),80,A503
+7.0,MEP Systems,A702,MEP rough-in (upper floors),80,"A505,A603"
+7.0,MEP Systems,A703,Equipment installation,40,"A701,A702"
+7.0,MEP Systems,A704,System testing (MEP),40,A703
+8.0,Interior Finishes,A801,Partition walls & drywall,60,A602
+8.0,Interior Finishes,A802,Flooring installation,40,A801
+8.0,Interior Finishes,A803,Painting & finishes,40,A802
+8.0,Interior Finishes,A804,Fixtures & fittings,40,A803
+9.0,Commissioning & Handover,A901,Final inspections,25,"A804,A704,A603,A507"
+9.0,Commissioning & Handover,A902,Punch list completion,25,A901
+9.0,Commissioning & Handover,A903,Occupancy certification,15,A902
+9.0,Commissioning & Handover,A904,Final handover,10,A903
+</script>
+
+<script type="text/plain" data-file="data/example/summit-tower-risk-params.csv">
+activity_id,optimistic_factor,most_likely_factor,pessimistic_factor,notes
+A101,0.80,1.00,1.30,Kickoff — no identified risks
+A102,0.80,1.00,1.50,Design coordination — SKD-13 design changes
+A103,0.90,1.00,1.30,Permit submission — no identified risks
+A104,0.65,1.00,2.20,Permit approval — SKD-03 permit delays + SKD-14 inspection delays (PID 28+14)
+A105,0.85,1.00,1.35,Procurement planning — no direct risks
+A106,0.75,1.00,1.60,Contractor mobilization — SKD-03 permit delays cascade
+A201,0.85,1.00,1.30,Site survey — no identified risks
+A202,0.75,1.00,1.70,Utility relocation — SKD-09 underground utility strike (PID 18)
+A203,0.80,1.00,1.40,Demolition — no identified risks
+A204,0.75,1.00,1.60,Site clearing — SKD-05 weather (PID 28)
+A301,0.70,1.00,2.00,Shoring — SKD-05 weather + SKD-08 excavation failure + SKD-09 utility strike + SKD-12 safety (PID 28+20+18+15)
+A302,0.65,1.00,2.20,Bulk excavation — SKD-02 groundwater + SKD-05 weather + SKD-08 excavation failure + SKD-12 safety (PID 64+28+20+15)
+A303,0.70,1.00,1.90,Dewatering — SKD-02 groundwater + SKD-05 weather + SKD-12 safety (PID 64+28+15)
+A304,0.65,1.00,2.10,Final depth excavation — SKD-02 groundwater + SKD-05 weather + SKD-08 excavation failure + SKD-12 safety (PID 64+28+20+15)
+A401,0.80,1.00,1.50,Pile mobilization — SKD-05 weather (PID 28)
+A402,0.60,1.00,2.20,Pile installation — SKD-01 material prices + SKD-04 labor + SKD-05 weather + SKD-06 pile capacity + SKD-11 material delivery (PID 36+28+28+28+18)
+A403,0.70,1.00,2.00,Pile load testing — SKD-06 pile capacity shortfall (PID 28) — retesting if shortfall
+A404,0.85,1.00,1.30,Excavation leveling — no identified risks
+A405,0.70,1.00,1.80,Mat formwork & rebar — SKD-01 material prices + SKD-06 pile capacity + SKD-13 design changes (PID 36+28+14)
+A406,0.80,1.00,1.50,Concrete pour — SKD-01 material prices (PID 36)
+A407,0.75,1.00,1.70,Curing & waterproofing — SKD-02 groundwater + SKD-15 differential settlement (PID 64+10)
+A501,0.60,1.00,2.20,Tower crane install — SKD-04 labor + SKD-05 weather + SKD-07 crane delivery + SKD-10 crane install + SKD-12 safety + SKD-15 settlement (PID 28+28+15+15+15+10)
+A502,0.60,1.00,2.00,Core construction — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-11 delivery + SKD-12 safety + SKD-13 design (PID 36+28+28+18+15+14)
+A503,0.70,1.00,1.80,Floor cycle 1-10 — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-12 safety (PID 36+28+28+15)
+A504,0.70,1.00,1.70,Floor cycle 11-20 — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-12 safety (PID 36+28+28+15)
+A505,0.70,1.00,1.70,Floor cycle 21-30 — SKD-01 material + SKD-04 labor + SKD-05 weather + SKD-12 safety (PID 36+28+28+15)
+A506,0.70,1.00,1.70,Floor cycle 31-41 — SKD-01 material + SKD-04 labor + SKD-12 safety (PID 36+28+15)
+A507,0.85,1.00,1.30,Topping out — no identified risks
+A601,0.80,1.00,1.60,CW fabrication — SKD-11 material delivery (PID 18)
+A602,0.80,1.00,1.50,CW install lower — SKD-04 labor (PID 28)
+A603,0.75,1.00,1.60,CW install upper — SKD-04 labor + wind at height (PID 28)
+A701,0.85,1.00,1.40,MEP rough-in lower — no identified risks
+A702,0.80,1.00,1.50,MEP rough-in upper — SKD-04 labor (PID 28)
+A703,0.80,1.00,1.50,Equipment installation — SKD-04 labor (PID 28)
+A704,0.80,1.00,1.50,System testing — no identified risks
+A801,0.85,1.00,1.35,Partitions & drywall — no identified risks
+A802,0.85,1.00,1.35,Flooring — no identified risks
+A803,0.85,1.00,1.35,Painting & finishes — no identified risks
+A804,0.85,1.00,1.35,Fixtures & fittings — no identified risks
+A901,0.75,1.00,1.70,Final inspections — SKD-14 inspection delays (PID 14)
+A902,0.80,1.00,1.70,Punch list — scope creep
+A903,0.65,1.00,2.00,Occupancy cert — SKD-14 inspection delays (PID 14) — regulatory uncertainty
+A904,0.85,1.00,1.30,Final handover — no identified risks
+</script>
+
+<script type="text/plain" data-file="docs/methodology.tex">
+% Monte Carlo Schedule Risk Simulation — Methodology
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{libertine}
+\usepackage[scaled=0.85]{beramono}
+
+\section*{Setup}
+The project is a directed acyclic graph of activities with finish-to-start,
+zero-lag precedence. For each activity i, P(i) is its set of immediate
+predecessors and d_i > 0 its baseline duration in working days.
+
+\section*{CPM Forward Pass}
+ES_i = max(EF_j : j in P(i)),   EF_i = ES_i + d_i,   T_det = max(EF_i)
+
+\section*{Duration Uncertainty Model}
+Each activity receives three multiplicative factors (alpha, mu, beta) with
+0 < alpha <= mu <= beta (optimistic, most-likely, pessimistic), producing
+a three-point estimate (a_i, m_i, b_i) = (alpha*d_i, mu*d_i, beta*d_i).
+Activity duration is modeled as a triangular random variable
+D_i ~ Tri(a_i, m_i, b_i).
+
+\section*{Monte Carlo Procedure}
+For N iterations (default N = 10,000):
+  1. Sample independent durations d_i^(k) ~ Tri(a_i, m_i, b_i) for every i
+  2. Run the CPM forward pass with the sampled durations to get EF_i^(k)
+  3. Record T^(k) = max(EF_i^(k))
+
+\section*{Output Statistics}
+Mean T_bar = (1/N) sum T^(k)
+Variance s^2 = (1/N) sum (T^(k) - T_bar)^2
+Empirical CDF F_T(t) = (1/N) |{k : T^(k) <= t}|
+Percentiles P_p = F_T^(-1)(p/100) for p in {5, 10, ..., 95}
+
+\section*{Sensitivity via Spearman Rank Correlation}
+For each activity i, the driver effect is quantified by:
+rho_i = 1 - (6 * sum(R(d_i^(k)) - R(T^(k)))^2) / (N * (N^2 - 1))
+Activities are ranked by |rho_i| and displayed as a tornado chart.
+</script>
+
+<script type="text/plain" data-file="scripts/monte_carlo.py">
+#!/usr/bin/env python3
+"""
+Monte Carlo Schedule Risk Simulation
+Matches Primavera Risk Analysis (OPRA) methodology.
+
+Uncertainty is modeled solely through three-point (triangular) duration
+distributions per activity. Risk register findings are reflected in the
+distribution parameters (wider tails on risk-exposed activities).
+
+Inputs:
+  - Schedule CSV:  activity network with durations and predecessors
+  - Risk params CSV: optimistic/most-likely/pessimistic factors per activity
+  - OR an Excel workbook containing both (created with --init)
+
+Outputs (written to outputs/ and back into the workbook):
+  - Histogram of project finish dates
+  - S-curve (CDF) with P50, P80, P90 markers
+  - Tornado chart — activity sensitivity (Spearman rank correlation)
+  - Results sheet — summary statistics and full percentile table
+  - Sensitivity sheet — all activities ranked by correlation
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import random
+from collections import deque
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "outputs"
+DEFAULT_N = 10_000
+DEFAULT_SEED = 42
+
+# Style constants (cockpit palette)
+BG = "#FFFFFF"
+TEXT = "#1A1A1A"
+MUTED = "#6B6B6B"
+ACCENT = "#3B82F6"
+CRIT = "#DC2626"
+GREEN = "#16A34A"
+
+
+@dataclass
+class Activity:
+    wbs: str
+    wbs_name: str
+    activity_id: str
+    activity_name: str
+    duration_days: int
+    predecessors: list[str]
+    successors: list[str] = field(default_factory=list)
+
+
+@dataclass
+class RiskParams:
+    optimistic_factor: float
+    most_likely_factor: float
+    pessimistic_factor: float
+
+
+def load_schedule(path: Path) -> tuple[dict[str, Activity], list[str]]:
+    activities: dict[str, Activity] = {}
+    order: list[str] = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            preds = [p.strip() for p in row["predecessors"].split(",") if p.strip()]
+            act = Activity(
+                wbs=row["wbs"], wbs_name=row["wbs_name"],
+                activity_id=row["activity_id"], activity_name=row["activity_name"],
+                duration_days=int(row["duration_days"]), predecessors=preds,
+            )
+            activities[act.activity_id] = act
+            order.append(act.activity_id)
+    for act in activities.values():
+        for pred_id in act.predecessors:
+            activities[pred_id].successors.append(act.activity_id)
+    return activities, order
+
+
+def topological_order(activities: dict[str, Activity], csv_order: list[str]) -> list[str]:
+    idx = {aid: i for i, aid in enumerate(csv_order)}
+    indegree = {aid: len(a.predecessors) for aid, a in activities.items()}
+    ready = deque(sorted([aid for aid, d in indegree.items() if d == 0], key=idx.get))
+    ordered: list[str] = []
+    while ready:
+        cur = ready.popleft()
+        ordered.append(cur)
+        for succ in sorted(activities[cur].successors, key=idx.get):
+            indegree[succ] -= 1
+            if indegree[succ] == 0:
+                ready.append(succ)
+    return ordered
+
+
+def forward_pass(topo: list[str], activities: dict[str, Activity],
+                 durations: dict[str, float]) -> dict[str, float]:
+    start: dict[str, float] = {}
+    finish: dict[str, float] = {}
+    for aid in topo:
+        act = activities[aid]
+        if act.predecessors:
+            start[aid] = max(finish[p] for p in act.predecessors)
+        else:
+            start[aid] = 0.0
+        finish[aid] = start[aid] + durations[aid]
+    return finish
+
+
+def run_simulation(
+    activities: dict[str, Activity], csv_order: list[str],
+    risk_params: dict[str, RiskParams],
+    n_iter: int, seed: int,
+) -> tuple[np.ndarray, dict[str, np.ndarray]]:
+    rng = random.Random(seed)
+    topo = topological_order(activities, csv_order)
+    project_finishes = np.zeros(n_iter)
+    activity_durations: dict[str, np.ndarray] = {aid: np.zeros(n_iter) for aid in csv_order}
+
+    for i in range(n_iter):
+        sampled: dict[str, float] = {}
+        for aid in csv_order:
+            base = activities[aid].duration_days
+            rp = risk_params[aid]
+            lo = base * rp.optimistic_factor
+            mode = base * rp.most_likely_factor
+            hi = base * rp.pessimistic_factor
+            sampled[aid] = rng.triangular(lo, hi, mode)
+
+        finish = forward_pass(topo, activities, sampled)
+        project_finishes[i] = max(finish.values())
+        for aid in csv_order:
+            activity_durations[aid][i] = sampled[aid]
+
+    return project_finishes, activity_durations
+
+
+def _spearman(x: np.ndarray, y: np.ndarray) -> float:
+    rx = np.empty_like(x)
+    ry = np.empty_like(y)
+    rx[x.argsort()] = np.arange(len(x), dtype=float)
+    ry[y.argsort()] = np.arange(len(y), dtype=float)
+    d = rx - ry
+    n = len(x)
+    return 1 - 6 * np.sum(d ** 2) / (n * (n ** 2 - 1))
+
+
+# See the full repository for the complete implementation including:
+#   - load_from_workbook / write_results_to_workbook (openpyxl)
+#   - plot_histogram / plot_scurve / plot_tornado (matplotlib)
+#   - main() with argparse CLI
+</script>
+
+<script type="text/plain" data-file="scripts/render_gantt.py">
+#!/usr/bin/env python3
+"""
+CPM Schedule Gantt Chart Renderer
+
+Reads a schedule CSV, computes a forward-pass CPM schedule, and renders
+a Gantt chart with WBS color coding and critical path highlighting.
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+from collections import deque
+from dataclasses import dataclass, field
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "outputs"
+
+PALETTE = [
+    "#264653", "#2A9D8F", "#457B9D", "#8D99AE", "#E76F51",
+    "#F4A261", "#6A994E", "#BC6C25", "#7B2CBF", "#3B82F6",
+    "#06B6D4", "#DC2626", "#D97706", "#16A34A", "#A855F7",
+]
+
+
+@dataclass
+class Activity:
+    wbs: str
+    wbs_name: str
+    activity_id: str
+    activity_name: str
+    duration_days: int
+    predecessors: list[str]
+    successors: list[str] = field(default_factory=list)
+    start_day: int = 0
+    finish_day: int = 0
+
+
+def load_activities(path: Path) -> tuple[dict[str, Activity], list[str]]:
+    activities: dict[str, Activity] = {}
+    order: list[str] = []
+    with path.open(newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            preds = [p.strip() for p in row["predecessors"].split(",") if p.strip()]
+            act = Activity(
+                wbs=row["wbs"], wbs_name=row["wbs_name"],
+                activity_id=row["activity_id"], activity_name=row["activity_name"],
+                duration_days=int(row["duration_days"]), predecessors=preds,
+            )
+            activities[act.activity_id] = act
+            order.append(act.activity_id)
+    for act in activities.values():
+        for pred_id in act.predecessors:
+            activities[pred_id].successors.append(act.activity_id)
+    return activities, order
+
+
+def topological_order(activities, csv_order):
+    idx = {aid: i for i, aid in enumerate(csv_order)}
+    indegree = {aid: len(a.predecessors) for aid, a in activities.items()}
+    ready = deque(sorted([aid for aid, d in indegree.items() if d == 0], key=idx.get))
+    ordered = []
+    while ready:
+        cur = ready.popleft()
+        ordered.append(cur)
+        for succ in sorted(activities[cur].successors, key=idx.get):
+            indegree[succ] -= 1
+            if indegree[succ] == 0:
+                ready.append(succ)
+    return ordered
+
+
+def compute_schedule(activities, ordered_ids):
+    for aid in ordered_ids:
+        act = activities[aid]
+        if act.predecessors:
+            act.start_day = max(activities[p].finish_day for p in act.predecessors)
+        else:
+            act.start_day = 0
+        act.finish_day = act.start_day + act.duration_days
+
+
+# See full repo for render_chart() and main() implementations
+</script>
+
+<script type="text/plain" data-file="scripts/combine_outputs.py">
+#!/usr/bin/env python3
+"""Combine all PNG outputs into a single composite image."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "outputs"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Combine output PNGs into one image")
+    parser.add_argument("--output", type=Path, default=OUT / "summary.png")
+    args = parser.parse_args()
+
+    panels = [
+        OUT / "gantt.png",
+        OUT / "monte-carlo-histogram.png",
+        OUT / "monte-carlo-scurve.png",
+        OUT / "monte-carlo-tornado.png",
+    ]
+
+    for p in panels:
+        if not p.exists():
+            print(f"Missing: {p.name} — run 'make' first")
+            return
+
+    fig, axes = plt.subplots(2, 2, figsize=(28, 20), facecolor="#FFFFFF")
+
+    for ax, path in zip(axes.flat, panels):
+        img = mpimg.imread(str(path))
+        ax.imshow(img)
+        ax.set_axis_off()
+
+    fig.subplots_adjust(wspace=0.02, hspace=0.02)
+    fig.savefig(args.output, dpi=200, facecolor="#FFFFFF", bbox_inches="tight", pad_inches=0.3)
+    plt.close(fig)
+    print(f"Combined output saved: {args.output}")
+
+
+if __name__ == "__main__":
+    main()
+</script>
+
+<!-- ═══ MAIN SCRIPT ═══════════════════════════ -->
+<script>
+// ============================================================
+// EMBEDDED REPO FILES — loaded from <script type="text/plain">
+// ============================================================
+const REPO_FILES = {};
+document.querySelectorAll('script[type="text/plain"][data-file]').forEach(s => {
+  REPO_FILES[s.dataset.file] = s.textContent.replace(/^\n/, '').replace(/\s+$/, '');
+});
+document.getElementById('intro-files').textContent = Object.keys(REPO_FILES).length;
+
+// ============================================================
+// CSV PARSER
+// ============================================================
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length === 0) return [];
+  const headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const values = splitCSVLine(line);
+    const row = {};
+    headers.forEach((h, i) => row[h] = (values[i] || '').trim());
+    return row;
+  });
+}
+
+function splitCSVLine(line) {
+  const result = [];
+  let cur = '', inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQuotes && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (c === ',' && !inQuotes) {
+      result.push(cur); cur = '';
+    } else cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+// ============================================================
+// DYNAMIC DATA (can be reloaded from CSV upload)
+// ============================================================
+let ACTIVITIES = [];
+let RISK = {};
+let TOPO = [];
+let DET = null;
+let DET_FINISH = 0;
+let PES = null;
+let PES_FINISH = 0;
+let X_MAX = 1500;
+let HIST_LO = 0;
+let HIST_HI = 1500;
+
+const WBS_COLORS_FIXED = [
+  '#264653','#2A9D8F','#457B9D','#8D99AE','#E76F51',
+  '#F4A261','#6A994E','#BC6C25','#7B2CBF','#3B82F6',
+  '#06B6D4','#DC2626','#D97706','#16A34A','#A855F7',
+];
+let WBS_COLORS = {};
+
+function loadDefaults() {
+  const schedText = REPO_FILES['data/example/summit-tower-activities.csv'];
+  const riskText = REPO_FILES['data/example/summit-tower-risk-params.csv'];
+  loadScheduleFromText(schedText);
+  loadRiskFromText(riskText);
+  recomputeDerived();
+  document.getElementById('data-status').textContent = 'DEFAULTS LOADED · SUMMIT TOWER';
+  document.getElementById('data-status').className = 'status ok';
+}
+
+function loadScheduleFromText(text) {
+  const rows = parseCSV(text);
+  const newActs = rows.map(r => ({
+    id: r.activity_id,
+    name: r.activity_name,
+    wbs: r.wbs,
+    wbs_name: r.wbs_name,
+    duration: parseFloat(r.duration_days),
+    preds: r.predecessors
+      ? r.predecessors.replace(/^"|"$/g, '').split(',').map(s => s.trim()).filter(x => x)
+      : []
+  }));
+  ACTIVITIES = newActs;
+  // Assign WBS colors in order of appearance
+  WBS_COLORS = {};
+  let cidx = 0;
+  ACTIVITIES.forEach(a => {
+    if (!(a.wbs in WBS_COLORS)) {
+      WBS_COLORS[a.wbs] = WBS_COLORS_FIXED[cidx % WBS_COLORS_FIXED.length];
+      cidx++;
+    }
+  });
+}
+
+function loadRiskFromText(text) {
+  const rows = parseCSV(text);
+  RISK = {};
+  rows.forEach(r => {
+    RISK[r.activity_id] = {
+      opt: parseFloat(r.optimistic_factor),
+      ml: parseFloat(r.most_likely_factor),
+      pes: parseFloat(r.pessimistic_factor),
+      notes: r.notes || ''
+    };
+  });
+}
+
+function recomputeDerived() {
+  TOPO = topoSort(ACTIVITIES);
+  const detDur = {};
+  ACTIVITIES.forEach(a => { detDur[a.id] = a.duration; });
+  DET = forwardPass(TOPO, ACTIVITIES, detDur);
+  DET_FINISH = Math.max(...Object.values(DET.EF));
+
+  const pesDur = {};
+  ACTIVITIES.forEach(a => {
+    const rp = RISK[a.id] || {pes: 1.5};
+    pesDur[a.id] = a.duration * rp.pes;
+  });
+  PES = forwardPass(TOPO, ACTIVITIES, pesDur);
+  PES_FINISH = Math.max(...Object.values(PES.EF));
+  X_MAX = Math.ceil(PES_FINISH / 100) * 100;
+
+  HIST_LO = DET_FINISH * 0.9;
+  HIST_HI = PES_FINISH * 1.05;
+  histBins = new Array(HIST_NBINS).fill(0);
+
+  document.getElementById('intro-n').textContent = ACTIVITIES.length;
+  document.getElementById('intro-det').textContent = DET_FINISH.toFixed(0) + 'd';
+  document.getElementById('scene4-finish').textContent = `T_DET = ${DET_FINISH.toFixed(0)} DAYS`;
+  document.getElementById('kpi-det').textContent = DET_FINISH.toFixed(0);
+  document.getElementById('sched-count').textContent = ACTIVITIES.length;
+  document.getElementById('risk-count').textContent = Object.keys(RISK).length;
+}
+
+// ============================================================
+// CPM ENGINE
+// ============================================================
+function topoSort(acts) {
+  const byId = {};
+  acts.forEach(a => { byId[a.id] = {...a, succ: []}; });
+  acts.forEach(a => { a.preds.forEach(p => { if (byId[p]) byId[p].succ.push(a.id); }); });
+  const indeg = {};
+  acts.forEach(a => { indeg[a.id] = a.preds.length; });
+  const queue = acts.filter(a => indeg[a.id] === 0).map(a => a.id);
+  const order = [];
+  while (queue.length) {
+    const cur = queue.shift();
+    order.push(cur);
+    byId[cur].succ.forEach(s => { indeg[s]--; if (indeg[s] === 0) queue.push(s); });
+  }
+  return order;
+}
+
+function forwardPass(topo, acts, durations) {
+  const byId = {};
+  acts.forEach(a => { byId[a.id] = a; });
+  const ES = {}, EF = {};
+  for (const id of topo) {
+    const a = byId[id];
+    ES[id] = a.preds.length ? Math.max(...a.preds.map(p => EF[p] || 0)) : 0;
+    EF[id] = ES[id] + durations[id];
+  }
+  return { ES, EF };
+}
+
+function triangular(a, b, c) {
+  const u = Math.random();
+  const fc = (c - a) / (b - a);
+  if (u < fc) return a + Math.sqrt(u * (b - a) * (c - a));
+  return b - Math.sqrt((1 - u) * (b - a) * (b - c));
+}
+
+function sampleDurations() {
+  const dur = {};
+  ACTIVITIES.forEach(a => {
+    const rp = RISK[a.id];
+    const lo = a.duration * rp.opt;
+    const hi = a.duration * rp.pes;
+    const mode = a.duration * rp.ml;
+    dur[a.id] = triangular(lo, hi, mode);
+  });
+  return dur;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+const state = {
+  iteration: 0,
+  maxIter: 10000,
+  finishes: [],
+  sumT: 0,
+  sumT2: 0,
+  currentDurations: null,
+  currentFP: null,
+  currentFinish: null,
+  playing: false,
+  playTimer: null,
+  speed: 60,
+  ghostCount: 80,
+  ghosts: [],
+  hovered: null,
+  activityDurations: {},
+  scene: 1,
+};
+
+function resetState() {
+  state.iteration = 0;
+  state.finishes = [];
+  state.sumT = 0;
+  state.sumT2 = 0;
+  state.currentDurations = null;
+  state.currentFP = null;
+  state.currentFinish = null;
+  state.ghosts = [];
+  state.activityDurations = {};
+  ACTIVITIES.forEach(a => { state.activityDurations[a.id] = []; });
+  histBins = new Array(HIST_NBINS).fill(0);
+  updateKPIs();
+  if (state.scene === 6) renderLiveGantt();
+  renderHistogram();
+  renderSCurve();
+  renderDetail(null);
+  updateResults();
+}
+
+// ============================================================
+// SVG HELPERS
+// ============================================================
+function ns(tag, attrs={}) {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// ============================================================
+// GANTT RENDERING (shared: scene 4 baseline & scene 6 live)
+// ============================================================
+const ROW_H = 14;
+const HEADER_H = 30;
+const LEFT_W = 230;
+const TRI_W = 70;
+const MARGIN_R = 20;
+
+function ganttHeight() { return HEADER_H + ACTIVITIES.length * ROW_H + 20; }
+
+function xScale(days, svg) {
+  const w = svg.clientWidth || 800;
+  const chartW = w - LEFT_W - TRI_W - MARGIN_R;
+  return LEFT_W + TRI_W + (days / X_MAX) * chartW;
+}
+
+function renderGanttBase(svg, showLive) {
+  svg.innerHTML = '';
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', ganttHeight());
+  const w = svg.clientWidth || 800;
+  const chartW = w - LEFT_W - TRI_W - MARGIN_R;
+  const axisY = HEADER_H - 4;
+
+  svg.appendChild(ns('line', {x1: LEFT_W + TRI_W, y1: axisY, x2: w - MARGIN_R, y2: axisY, stroke: 'var(--border)', 'stroke-width': 0.5}));
+  const tickStep = X_MAX > 1500 ? 200 : 100;
+  for (let d = 0; d <= X_MAX; d += tickStep) {
+    const x = xScale(d, svg);
+    svg.appendChild(ns('line', {x1: x, y1: axisY - 3, x2: x, y2: axisY, stroke: 'var(--muted)', 'stroke-width': 0.5}));
+    const t = ns('text', {x: x, y: axisY - 6, 'text-anchor': 'middle', class: 'axis-label'});
+    t.textContent = d;
+    svg.appendChild(t);
+  }
+  const axisLabel = ns('text', {x: LEFT_W + TRI_W, y: 10, class: 'axis-label'});
+  axisLabel.textContent = 'WORKING DAYS →';
+  svg.appendChild(axisLabel);
+  const lh1 = ns('text', {x: 4, y: 10, class: 'axis-label'}); lh1.textContent = 'ACTIVITY'; svg.appendChild(lh1);
+  const lh2 = ns('text', {x: LEFT_W, y: 10, class: 'axis-label'}); lh2.textContent = 'DISTRIBUTION'; svg.appendChild(lh2);
+
+  const detX = xScale(DET_FINISH, svg);
+  svg.appendChild(ns('line', {x1: detX, y1: HEADER_H, x2: detX, y2: HEADER_H + ACTIVITIES.length * ROW_H, class: 'finish-line-det'}));
+  const detLbl = ns('text', {x: detX - 2, y: HEADER_H - 16, 'text-anchor': 'end', class: 'p-label', fill: 'var(--green)'});
+  detLbl.textContent = `T_DET = ${DET_FINISH.toFixed(0)}d`;
+  svg.appendChild(detLbl);
+
+  if (showLive && state.currentFinish !== null) {
+    const curX = xScale(state.currentFinish, svg);
+    svg.appendChild(ns('line', {x1: curX, y1: HEADER_H, x2: curX, y2: HEADER_H + ACTIVITIES.length * ROW_H, class: 'finish-line-current'}));
+    const curLbl = ns('text', {x: curX + 2, y: HEADER_H - 16, 'text-anchor': 'start', class: 'p-label', fill: 'var(--accent)'});
+    curLbl.textContent = `T^(k) = ${state.currentFinish.toFixed(0)}d`;
+    svg.appendChild(curLbl);
+  }
+
+  let lastWbs = null;
+  ACTIVITIES.forEach((a, i) => {
+    const y = HEADER_H + i * ROW_H;
+    const rowG = ns('g', {class: 'activity-row'});
+    if (a.wbs !== lastWbs) {
+      rowG.appendChild(ns('line', {x1: 0, y1: y, x2: w - MARGIN_R, y2: y, class: 'wbs-divider'}));
+      lastWbs = a.wbs;
+    }
+    rowG.appendChild(ns('rect', {class: 'bg', x: 0, y: y, width: w - MARGIN_R, height: ROW_H, fill: 'transparent'}));
+    const idT = ns('text', {x: 4, y: y + ROW_H/2, class: 'activity-id'}); idT.textContent = a.id; rowG.appendChild(idT);
+    const nameT = ns('text', {x: 42, y: y + ROW_H/2, class: 'activity-label'});
+    const maxChars = 22;
+    nameT.textContent = a.name.length > maxChars ? a.name.slice(0, maxChars - 1) + '…' : a.name;
+    rowG.appendChild(nameT);
+
+    const rp = RISK[a.id];
+    if (rp) {
+      const lo = a.duration * rp.opt;
+      const hi = a.duration * rp.pes;
+      const mode = a.duration * rp.ml;
+      const triH = ROW_H - 4;
+      const triY0 = y + ROW_H - 2;
+      const triX0 = LEFT_W + 4;
+      const triXW = TRI_W - 8;
+      const triXLo = triX0;
+      const triXHi = triX0 + triXW;
+      const modeRatio = (mode - lo) / (hi - lo);
+      const triXMode = triX0 + modeRatio * triXW;
+      const pts = `${triXLo},${triY0} ${triXMode},${triY0 - triH} ${triXHi},${triY0}`;
+      rowG.appendChild(ns('polygon', {points: pts, class: 'triangle-fill'}));
+      rowG.appendChild(ns('polygon', {points: pts, class: 'triangle-stroke'}));
+      rowG.appendChild(ns('line', {x1: triXMode, y1: triY0, x2: triXMode, y2: triY0 - triH, class: 'triangle-mode'}));
+      if (showLive && state.currentDurations) {
+        const sampled = state.currentDurations[a.id];
+        const sRatio = (sampled - lo) / (hi - lo);
+        const sX = triX0 + sRatio * triXW;
+        rowG.appendChild(ns('line', {x1: sX, y1: triY0 + 1, x2: sX, y2: triY0 - triH - 1, class: 'triangle-sample'}));
+      }
+    }
+
+    const detES = DET.ES[a.id], detEF = DET.EF[a.id];
+    const dx1 = xScale(detES, svg), dx2 = xScale(detEF, svg);
+    rowG.appendChild(ns('rect', {x: dx1, y: y + 2, width: Math.max(1, dx2 - dx1), height: ROW_H - 4, class: 'activity-bar-det'}));
+
+    if (showLive) {
+      state.ghosts.forEach(g => {
+        const gx1 = xScale(g.ES[a.id], svg), gx2 = xScale(g.EF[a.id], svg);
+        rowG.appendChild(ns('rect', {x: gx1, y: y + 3, width: Math.max(1, gx2 - gx1), height: ROW_H - 6, class: 'activity-bar-ghost'}));
+      });
+      if (state.currentFP) {
+        const cES = state.currentFP.ES[a.id], cEF = state.currentFP.EF[a.id];
+        const x1 = xScale(cES, svg), x2 = xScale(cEF, svg);
+        rowG.appendChild(ns('rect', {x: x1, y: y + 2, width: Math.max(1, x2 - x1), height: ROW_H - 4, fill: WBS_COLORS[a.wbs], class: 'activity-bar-active'}));
+      }
+    } else {
+      rowG.appendChild(ns('rect', {x: dx1, y: y + 2, width: Math.max(1, dx2 - dx1), height: ROW_H - 4, fill: WBS_COLORS[a.wbs], opacity: 0.85}));
+    }
+
+    rowG.addEventListener('mouseenter', () => {
+      state.hovered = a.id;
+      const rpp = RISK[a.id];
+      const sampled = state.currentDurations ? state.currentDurations[a.id].toFixed(1) : '—';
+      const s = `${a.id} base=${a.duration}d α=${rpp.opt} μ=${rpp.ml} β=${rpp.pes} sampled=${sampled}`;
+      document.getElementById('status-left').textContent = s;
+      if (document.getElementById('detail-label')) {
+        document.getElementById('detail-label').textContent = `${a.id} · ${a.name}`;
+      }
+      renderDetail(a.id);
+    });
+    rowG.addEventListener('mouseleave', () => {
+      state.hovered = null;
+      document.getElementById('status-left').textContent = getStatusText();
+      if (document.getElementById('detail-label')) {
+        document.getElementById('detail-label').textContent = '— hover —';
+      }
+      renderDetail(null);
+    });
+
+    svg.appendChild(rowG);
+  });
+}
+
+function renderBaselineGantt() {
+  const svg = document.getElementById('gantt-baseline');
+  if (svg) renderGanttBase(svg, false);
+}
+
+function renderLiveGantt() {
+  const svg = document.getElementById('gantt-live');
+  if (svg) renderGanttBase(svg, true);
+}
+
+// ============================================================
+// DISTRIBUTION GRID (Scene 5)
+// ============================================================
+function renderDistGrid() {
+  const grid = document.getElementById('dist-grid');
+  grid.innerHTML = '';
+  ACTIVITIES.forEach(a => {
+    const cell = document.createElement('div');
+    cell.className = 'dist-cell';
+    const rp = RISK[a.id];
+    if (!rp) return;
+    const lo = a.duration * rp.opt;
+    const hi = a.duration * rp.pes;
+    const mode = a.duration * rp.ml;
+
+    const aid = document.createElement('div');
+    aid.className = 'aid';
+    aid.innerHTML = `<strong style="color:${WBS_COLORS[a.wbs]}">${a.id}</strong> · ${a.name.slice(0, 28)}`;
+    cell.appendChild(aid);
+
+    const params = document.createElement('div');
+    params.className = 'params';
+    params.textContent = `d=${a.duration}d  α=${rp.opt}  β=${rp.pes}  (${lo.toFixed(0)}-${hi.toFixed(0)})`;
+    cell.appendChild(params);
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', 56);
+    svg.setAttribute('viewBox', '0 0 200 56');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    const ml = 10, mr = 10, mt = 4, mb = 12;
+    const chartW = 200 - ml - mr;
+    const chartH = 56 - mt - mb;
+    const xToPx = x => ml + ((x - lo) / (hi - lo)) * chartW;
+    const yToPx = y => mt + chartH - y * chartH;
+    const pts = `${xToPx(lo)},${yToPx(0)} ${xToPx(mode)},${yToPx(1)} ${xToPx(hi)},${yToPx(0)}`;
+    svg.appendChild(ns('polygon', {points: pts, fill: WBS_COLORS[a.wbs], 'fill-opacity': 0.25, stroke: WBS_COLORS[a.wbs], 'stroke-width': 0.8}));
+    svg.appendChild(ns('line', {x1: ml, y1: yToPx(0), x2: ml + chartW, y2: yToPx(0), stroke: 'var(--border)', 'stroke-width': 0.5}));
+    [lo, mode, hi].forEach(v => {
+      const x = xToPx(v);
+      svg.appendChild(ns('line', {x1: x, y1: yToPx(0), x2: x, y2: yToPx(0) + 2, stroke: 'var(--muted)', 'stroke-width': 0.5}));
+      const tt = ns('text', {x: x, y: yToPx(0) + 10, 'text-anchor': 'middle', 'font-size': 7, fill: 'var(--muted)', 'font-family': 'inherit'});
+      tt.textContent = v.toFixed(0);
+      svg.appendChild(tt);
+    });
+    cell.appendChild(svg);
+    grid.appendChild(cell);
+  });
+}
+
+// ============================================================
+// HISTOGRAM / S-CURVE / DETAIL
+// ============================================================
+const hist = document.getElementById('histogram');
+const HIST_NBINS = 50;
+let histBins = new Array(HIST_NBINS).fill(0);
+
+function addToHistogram(t) {
+  const bin = Math.floor((t - HIST_LO) / (HIST_HI - HIST_LO) * HIST_NBINS);
+  histBins[Math.max(0, Math.min(HIST_NBINS - 1, bin))]++;
+}
+
+function renderHistogram() {
+  if (!hist) return;
+  hist.innerHTML = '';
+  const w = hist.clientWidth || 340;
+  const h = 200;
+  hist.setAttribute('width', w);
+  hist.setAttribute('height', h);
+  const ml = 40, mr = 10, mt = 10, mb = 30;
+  const chartW = w - ml - mr;
+  const chartH = h - mt - mb;
+  const maxBin = Math.max(1, ...histBins);
+  const binW = chartW / HIST_NBINS;
+
+  histBins.forEach((c, i) => {
+    const bh = (c / maxBin) * chartH;
+    hist.appendChild(ns('rect', {x: ml + i * binW, y: mt + chartH - bh, width: binW - 0.5, height: bh, class: 'hist-bar'}));
+  });
+
+  if (state.currentFinish !== null) {
+    const cx = ml + ((state.currentFinish - HIST_LO) / (HIST_HI - HIST_LO)) * chartW;
+    hist.appendChild(ns('line', {x1: cx, y1: mt, x2: cx, y2: mt + chartH, stroke: 'var(--red)', 'stroke-width': 1}));
+  }
+  const dx = ml + ((DET_FINISH - HIST_LO) / (HIST_HI - HIST_LO)) * chartW;
+  hist.appendChild(ns('line', {x1: dx, y1: mt, x2: dx, y2: mt + chartH, stroke: 'var(--green)', 'stroke-width': 1, 'stroke-dasharray': '3 3'}));
+
+  if (state.finishes.length > 50) {
+    const sorted = [...state.finishes].sort((a,b) => a-b);
+    const pVals = [{p:50, c:'#F59E0B'}, {p:80, c:'#F97316'}, {p:90, c:'var(--red)'}];
+    pVals.forEach(({p, c}) => {
+      const v = sorted[Math.floor(sorted.length * p / 100)];
+      const px = ml + ((v - HIST_LO) / (HIST_HI - HIST_LO)) * chartW;
+      hist.appendChild(ns('line', {x1: px, y1: mt, x2: px, y2: mt + chartH, stroke: c, 'stroke-width': 0.8, 'stroke-dasharray': '2 2'}));
+      const lbl = ns('text', {x: px, y: mt + 8, 'text-anchor': 'middle', class: 'p-label', fill: c});
+      lbl.textContent = `P${p}`;
+      hist.appendChild(lbl);
+    });
+  }
+
+  hist.appendChild(ns('line', {x1: ml, y1: mt + chartH, x2: ml + chartW, y2: mt + chartH, stroke: 'var(--border)'}));
+  for (let i = 0; i <= 4; i++) {
+    const t = HIST_LO + (HIST_HI - HIST_LO) * i / 4;
+    const x = ml + (chartW * i / 4);
+    hist.appendChild(ns('line', {x1: x, y1: mt + chartH, x2: x, y2: mt + chartH + 3, stroke: 'var(--muted)', 'stroke-width': 0.5}));
+    const lbl = ns('text', {x: x, y: mt + chartH + 14, 'text-anchor': 'middle', class: 'axis-label'});
+    lbl.textContent = t.toFixed(0);
+    hist.appendChild(lbl);
+  }
+  document.getElementById('hist-n').textContent = state.finishes.length.toLocaleString();
+}
+
+const scurve = document.getElementById('scurve');
+
+function renderSCurve() {
+  if (!scurve) return;
+  scurve.innerHTML = '';
+  const w = scurve.clientWidth || 340;
+  const h = 200;
+  scurve.setAttribute('width', w);
+  scurve.setAttribute('height', h);
+  const ml = 40, mr = 10, mt = 10, mb = 30;
+  const chartW = w - ml - mr;
+  const chartH = h - mt - mb;
+
+  if (state.finishes.length < 10) {
+    const t = ns('text', {x: w/2, y: h/2, 'text-anchor': 'middle', class: 'axis-label'});
+    t.textContent = 'accumulating samples...';
+    scurve.appendChild(t);
+    return;
+  }
+
+  const sorted = [...state.finishes].sort((a,b) => a-b);
+  const n = sorted.length;
+  const tLo = sorted[0], tHi = sorted[n-1];
+  const range = tHi - tLo || 1;
+
+  let pts = '';
+  for (let i = 0; i < n; i += Math.max(1, Math.floor(n/200))) {
+    const x = ml + ((sorted[i] - tLo) / range) * chartW;
+    const y = mt + chartH - (i / n) * chartH;
+    pts += `${x},${y} `;
+  }
+  pts += `${ml + chartW},${mt}`;
+  scurve.appendChild(ns('polyline', {points: pts, class: 'scurve-line'}));
+
+  const pVals = [{p:50, c:'#F59E0B'}, {p:80, c:'#F97316'}, {p:90, c:'var(--red)'}];
+  pVals.forEach(({p, c}) => {
+    const v = sorted[Math.floor(n * p / 100)];
+    const px = ml + ((v - tLo) / range) * chartW;
+    const py = mt + chartH - (p / 100) * chartH;
+    scurve.appendChild(ns('line', {x1: px, y1: mt, x2: px, y2: mt + chartH, stroke: c, 'stroke-width': 0.5, 'stroke-dasharray': '2 2'}));
+    scurve.appendChild(ns('line', {x1: ml, y1: py, x2: ml + chartW, y2: py, stroke: c, 'stroke-width': 0.5, 'stroke-dasharray': '2 2'}));
+    scurve.appendChild(ns('circle', {cx: px, cy: py, r: 3, fill: c}));
+    const lbl = ns('text', {x: px + 4, y: py + 3, class: 'p-label', fill: c});
+    lbl.textContent = `P${p}=${v.toFixed(0)}`;
+    scurve.appendChild(lbl);
+  });
+
+  scurve.appendChild(ns('line', {x1: ml, y1: mt + chartH, x2: ml + chartW, y2: mt + chartH, stroke: 'var(--border)'}));
+  scurve.appendChild(ns('line', {x1: ml, y1: mt, x2: ml, y2: mt + chartH, stroke: 'var(--border)'}));
+  for (let i = 0; i <= 4; i++) {
+    const t = tLo + range * i / 4;
+    const xx = ml + (chartW * i / 4);
+    scurve.appendChild(ns('line', {x1: xx, y1: mt + chartH, x2: xx, y2: mt + chartH + 3, stroke: 'var(--muted)', 'stroke-width': 0.5}));
+    const lbl = ns('text', {x: xx, y: mt + chartH + 14, 'text-anchor': 'middle', class: 'axis-label'});
+    lbl.textContent = t.toFixed(0);
+    scurve.appendChild(lbl);
+    const py = mt + chartH - (chartH * i / 4);
+    const ylbl = ns('text', {x: ml - 4, y: py + 3, 'text-anchor': 'end', class: 'axis-label'});
+    ylbl.textContent = (i * 25) + '%';
+    scurve.appendChild(ylbl);
+  }
+}
+
+const detail = document.getElementById('detail');
+
+function renderDetail(aid) {
+  if (!detail) return;
+  detail.innerHTML = '';
+  const w = detail.clientWidth || 340;
+  const h = 130;
+  detail.setAttribute('width', w);
+  detail.setAttribute('height', h);
+
+  if (!aid) {
+    const t = ns('text', {x: w/2, y: h/2, 'text-anchor': 'middle', class: 'axis-label'});
+    t.textContent = 'hover an activity to see its distribution';
+    detail.appendChild(t);
+    return;
+  }
+
+  const a = ACTIVITIES.find(x => x.id === aid);
+  const rp = RISK[aid];
+  if (!a || !rp) return;
+  const lo = a.duration * rp.opt;
+  const hi = a.duration * rp.pes;
+  const mode = a.duration * rp.ml;
+
+  const ml = 30, mr = 20, mt = 20, mb = 30;
+  const chartW = w - ml - mr;
+  const chartH = h - mt - mb;
+  const peakDensity = 2 / (hi - lo);
+  const xToPx = x => ml + ((x - lo) / (hi - lo)) * chartW;
+  const yToPx = y => mt + chartH - (y / peakDensity) * chartH;
+
+  const pts = `${xToPx(lo)},${yToPx(0)} ${xToPx(mode)},${yToPx(peakDensity)} ${xToPx(hi)},${yToPx(0)}`;
+  detail.appendChild(ns('polygon', {points: pts, fill: 'var(--accent)', 'fill-opacity': 0.15, stroke: 'var(--accent)', 'stroke-width': 1.2}));
+  detail.appendChild(ns('line', {x1: ml, y1: yToPx(0), x2: ml + chartW, y2: yToPx(0), stroke: 'var(--border)'}));
+  [lo, mode, hi].forEach((v, i) => {
+    const x = xToPx(v);
+    detail.appendChild(ns('line', {x1: x, y1: yToPx(0), x2: x, y2: yToPx(0) + 3, stroke: 'var(--muted)', 'stroke-width': 0.5}));
+    const lbl = ns('text', {x: x, y: yToPx(0) + 14, 'text-anchor': 'middle', class: 'axis-label'});
+    lbl.textContent = v.toFixed(0);
+    detail.appendChild(lbl);
+    const lbl2 = ns('text', {x: x, y: mt - 4, 'text-anchor': 'middle', class: 'p-label', fill: 'var(--muted)'});
+    lbl2.textContent = ['a (opt)', 'm (likely)', 'b (pess)'][i];
+    detail.appendChild(lbl2);
+  });
+  const dx = xToPx(a.duration);
+  detail.appendChild(ns('line', {x1: dx, y1: mt, x2: dx, y2: yToPx(0), stroke: 'var(--green)', 'stroke-width': 0.8, 'stroke-dasharray': '2 2'}));
+  if (state.currentDurations) {
+    const sx = xToPx(state.currentDurations[aid]);
+    detail.appendChild(ns('line', {x1: sx, y1: mt, x2: sx, y2: yToPx(0), stroke: 'var(--red)', 'stroke-width': 1.5}));
+    detail.appendChild(ns('circle', {cx: sx, cy: yToPx(0), r: 3, fill: 'var(--red)'}));
+  }
+}
+
+// ============================================================
+// TORNADO (Spearman)
+// ============================================================
+function spearman(x, y) {
+  const n = x.length;
+  if (n < 2) return 0;
+  const idxX = [...x.keys()].sort((a,b) => x[a] - x[b]);
+  const idxY = [...y.keys()].sort((a,b) => y[a] - y[b]);
+  const rx = new Array(n), ry = new Array(n);
+  idxX.forEach((i, r) => rx[i] = r);
+  idxY.forEach((i, r) => ry[i] = r);
+  let d2 = 0;
+  for (let i = 0; i < n; i++) { const d = rx[i] - ry[i]; d2 += d * d; }
+  return 1 - (6 * d2) / (n * (n*n - 1));
+}
+
+function renderTornado() {
+  const svg = document.getElementById('tornado');
+  if (!svg) return;
+  svg.innerHTML = '';
+  const w = svg.clientWidth || 600;
+  svg.setAttribute('width', w);
+
+  if (state.finishes.length < 50) {
+    svg.setAttribute('height', 100);
+    const t = ns('text', {x: w/2, y: 50, 'text-anchor': 'middle', class: 'axis-label'});
+    t.textContent = 'run simulation first (scene 06)';
+    svg.appendChild(t);
+    return;
+  }
+
+  const corrs = ACTIVITIES.map(a => {
+    const c = spearman(state.activityDurations[a.id], state.finishes);
+    return { id: a.id, name: a.name, wbs: a.wbs, corr: c };
+  });
+  corrs.sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr));
+  const top = corrs.slice(0, 15).reverse();
+
+  const rowH = 24;
+  const h = top.length * rowH + 60;
+  svg.setAttribute('height', h);
+  const ml = 220, mr = 60, mt = 20, mb = 30;
+  const chartW = w - ml - mr;
+  const maxAbs = Math.max(...top.map(c => Math.abs(c.corr)), 0.1);
+  const xscl = v => ml + (v / maxAbs) * chartW / 2 + chartW / 2;
+  const zeroX = ml + chartW / 2;
+
+  svg.appendChild(ns('line', {x1: zeroX, y1: mt, x2: zeroX, y2: mt + top.length * rowH, stroke: 'var(--border)', 'stroke-width': 0.5}));
+
+  top.forEach((c, i) => {
+    const y = mt + i * rowH;
+    const barW = Math.abs(c.corr) / maxAbs * (chartW / 2);
+    const barX = c.corr >= 0 ? zeroX : zeroX - barW;
+    svg.appendChild(ns('rect', {x: barX, y: y + 4, width: barW, height: rowH - 8, fill: WBS_COLORS[c.wbs], class: 'tornado-bar'}));
+    const lbl = ns('text', {x: ml - 8, y: y + rowH/2, 'text-anchor': 'end', class: 'tornado-label'});
+    lbl.textContent = `${c.id} ${c.name.slice(0, 22)}`;
+    svg.appendChild(lbl);
+    const val = ns('text', {
+      x: c.corr >= 0 ? barX + barW + 4 : barX - 4, y: y + rowH/2,
+      'text-anchor': c.corr >= 0 ? 'start' : 'end', class: 'tornado-value',
+      fill: WBS_COLORS[c.wbs]
+    });
+    val.textContent = c.corr.toFixed(3);
+    svg.appendChild(val);
+  });
+
+  const ay = mt + top.length * rowH + 6;
+  svg.appendChild(ns('line', {x1: ml, y1: ay, x2: ml + chartW, y2: ay, stroke: 'var(--border)'}));
+  [-maxAbs, -maxAbs/2, 0, maxAbs/2, maxAbs].forEach(v => {
+    const x = xscl(v);
+    svg.appendChild(ns('line', {x1: x, y1: ay, x2: x, y2: ay + 3, stroke: 'var(--muted)', 'stroke-width': 0.5}));
+    const lbl = ns('text', {x: x, y: ay + 14, 'text-anchor': 'middle', class: 'axis-label'});
+    lbl.textContent = v.toFixed(2);
+    svg.appendChild(lbl);
+  });
+  const xl = ns('text', {x: ml + chartW/2, y: ay + 26, 'text-anchor': 'middle', class: 'axis-label'});
+  xl.textContent = 'SPEARMAN ρ (duration vs. project finish)';
+  svg.appendChild(xl);
+}
+
+// ============================================================
+// RESULTS UPDATE
+// ============================================================
+function updateResults() {
+  const n = state.finishes.length;
+  document.getElementById('res-iter').textContent = n.toLocaleString();
+  document.getElementById('res-det').textContent = DET_FINISH.toFixed(0);
+  if (n < 10) {
+    ['res-conf','res-mean','res-std','res-p50','res-p80','res-p90'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('percentile-body').innerHTML = '';
+    return;
+  }
+  const sorted = [...state.finishes].sort((a,b) => a-b);
+  const mean = state.sumT / n;
+  const variance = state.sumT2 / n - mean * mean;
+  const std = Math.sqrt(Math.max(0, variance));
+  let detIdx = sorted.findIndex(v => v >= DET_FINISH);
+  if (detIdx < 0) detIdx = n;
+  const detPercent = detIdx / n * 100;
+
+  document.getElementById('res-conf').textContent = detPercent.toFixed(0) + '%';
+  document.getElementById('res-mean').textContent = mean.toFixed(0);
+  document.getElementById('res-std').textContent = std.toFixed(1);
+  document.getElementById('res-p50').textContent = sorted[Math.floor(n * 0.50)].toFixed(0);
+  document.getElementById('res-p80').textContent = sorted[Math.floor(n * 0.80)].toFixed(0);
+  document.getElementById('res-p90').textContent = sorted[Math.floor(n * 0.90)].toFixed(0);
+
+  const pVals = [5, 10, 25, 50, 75, 80, 90, 95];
+  const tbody = document.getElementById('percentile-body');
+  tbody.innerHTML = '';
+  pVals.forEach(p => {
+    const v = sorted[Math.floor(n * p / 100)];
+    const delta = v - DET_FINISH;
+    const pct = delta / DET_FINISH * 100;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>P${p}</td><td>${v.toFixed(0)}</td><td>${delta >= 0 ? '+' : ''}${delta.toFixed(0)}</td><td>${delta >= 0 ? '+' : ''}${pct.toFixed(1)}%</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('interp-conf').textContent = detPercent.toFixed(0) + '%';
+  document.getElementById('interp-p80').textContent = sorted[Math.floor(n * 0.80)].toFixed(0);
+  document.getElementById('interp-std').textContent = std.toFixed(0);
+
+  if (state.scene === 7) renderTornado();
+}
+
+// ============================================================
+// KPI / STATUS
+// ============================================================
+function updateKPIs() {
+  document.getElementById('kpi-iter').textContent = state.iteration.toLocaleString();
+  document.getElementById('kpi-current').textContent = state.currentFinish !== null ? state.currentFinish.toFixed(0) : '—';
+  if (state.finishes.length > 0) {
+    const mean = state.sumT / state.finishes.length;
+    const variance = state.sumT2 / state.finishes.length - mean * mean;
+    const std = Math.sqrt(Math.max(0, variance));
+    document.getElementById('kpi-mean').textContent = mean.toFixed(0);
+    document.getElementById('kpi-std').textContent = std.toFixed(1);
+    if (state.finishes.length > 10) {
+      const sorted = [...state.finishes].sort((a,b) => a-b);
+      document.getElementById('kpi-p50').textContent = sorted[Math.floor(sorted.length * 0.50)].toFixed(0);
+      document.getElementById('kpi-p80').textContent = sorted[Math.floor(sorted.length * 0.80)].toFixed(0);
+      document.getElementById('kpi-p90').textContent = sorted[Math.floor(sorted.length * 0.90)].toFixed(0);
+    }
+  } else {
+    ['kpi-mean','kpi-std','kpi-p50','kpi-p80','kpi-p90'].forEach(id => document.getElementById(id).textContent = '—');
+  }
+}
+
+function getStatusText() {
+  if (state.scene === 6) return `${state.playing ? 'RUNNING' : 'PAUSED'} · ITER ${state.iteration.toLocaleString()} / ${state.maxIter.toLocaleString()}`;
+  return 'READY';
+}
+
+// ============================================================
+// SIM STEP
+// ============================================================
+function step() {
+  if (state.iteration >= state.maxIter) { pause(); return; }
+  const dur = sampleDurations();
+  const fp = forwardPass(TOPO, ACTIVITIES, dur);
+  const finish = Math.max(...Object.values(fp.EF));
+
+  state.currentDurations = dur;
+  state.currentFP = fp;
+  state.currentFinish = finish;
+  state.finishes.push(finish);
+  state.sumT += finish;
+  state.sumT2 += finish * finish;
+  state.iteration++;
+  addToHistogram(finish);
+  ACTIVITIES.forEach(a => state.activityDurations[a.id].push(dur[a.id]));
+
+  state.ghosts.push({ES: fp.ES, EF: fp.EF});
+  while (state.ghosts.length > state.ghostCount) state.ghosts.shift();
+
+  if (state.scene === 6) renderLiveGantt();
+  renderHistogram();
+  if (state.iteration % 5 === 0 || state.iteration < 100) renderSCurve();
+  if (state.hovered) renderDetail(state.hovered);
+  updateKPIs();
+  document.getElementById('status-left').textContent = getStatusText();
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+function play() {
+  state.playing = true;
+  document.getElementById('btn-play').textContent = '❚❚ PAUSE';
+  document.getElementById('btn-play').classList.add('active');
+  const interval = Math.max(2, 1000 / state.speed);
+  state.playTimer = setInterval(step, interval);
+  document.getElementById('status-left').textContent = getStatusText();
+}
+
+function pause() {
+  state.playing = false;
+  const btn = document.getElementById('btn-play');
+  if (btn) { btn.textContent = '▶ PLAY'; btn.classList.remove('active'); }
+  if (state.playTimer) clearInterval(state.playTimer);
+  state.playTimer = null;
+  document.getElementById('status-left').textContent = getStatusText();
+}
+
+document.getElementById('btn-play').addEventListener('click', () => { state.playing ? pause() : play(); });
+document.getElementById('btn-step').addEventListener('click', () => { if (state.playing) pause(); step(); });
+document.getElementById('btn-reset').addEventListener('click', () => { pause(); resetState(); });
+document.getElementById('speed').addEventListener('input', e => {
+  state.speed = parseInt(e.target.value);
+  document.getElementById('speed-readout').textContent = state.speed + '/s';
+  if (state.playing) { pause(); play(); }
+});
+document.getElementById('ghost-count').addEventListener('input', e => {
+  state.ghostCount = parseInt(e.target.value);
+  document.getElementById('ghost-readout').textContent = state.ghostCount;
+  while (state.ghosts.length > state.ghostCount) state.ghosts.shift();
+});
+
+// ============================================================
+// SOURCE SCENE — file browser
+// ============================================================
+const FILE_ORDER = [
+  'README.md',
+  'Makefile',
+  'requirements.txt',
+  'docs/methodology.tex',
+  'scripts/monte_carlo.py',
+  'scripts/render_gantt.py',
+  'scripts/combine_outputs.py',
+  'data/example/summit-tower-activities.csv',
+  'data/example/summit-tower-risk-params.csv',
+];
+
+function renderSourceScene() {
+  const list = document.getElementById('file-list');
+  list.innerHTML = '';
+  const tree = {};
+  FILE_ORDER.forEach(path => {
+    if (!(path in REPO_FILES)) return;
+    const parts = path.split('/');
+    if (parts.length === 1) (tree['.'] ||= []).push(path);
+    else { const dir = parts.slice(0, -1).join('/'); (tree[dir] ||= []).push(path); }
+  });
+  const dirs = Object.keys(tree).sort((a, b) => a === '.' ? -1 : b === '.' ? 1 : a.localeCompare(b));
+  dirs.forEach(dir => {
+    const dirLi = document.createElement('li');
+    dirLi.className = 'dir';
+    dirLi.textContent = dir === '.' ? '/ ROOT' : `/ ${dir.toUpperCase()}`;
+    list.appendChild(dirLi);
+    tree[dir].forEach(path => {
+      const fileLi = document.createElement('li');
+      fileLi.className = 'file';
+      fileLi.textContent = path.split('/').pop();
+      fileLi.dataset.path = path;
+      fileLi.addEventListener('click', () => selectFile(path));
+      list.appendChild(fileLi);
+    });
+  });
+  selectFile('README.md');
+}
+
+function selectFile(path) {
+  document.querySelectorAll('.file-tree li.file').forEach(li => {
+    li.classList.toggle('active', li.dataset.path === path);
+  });
+  const content = REPO_FILES[path] || '';
+  document.getElementById('source-path').textContent = path;
+  const lines = content.split('\n').length;
+  const kb = (content.length / 1024).toFixed(1);
+  document.getElementById('source-info').textContent = `${kb} KB · ${lines} LINES`;
+  const contentEl = document.getElementById('source-content');
+  contentEl.innerHTML = '';
+  content.split('\n').forEach((line, i) => {
+    const span = document.createElement('span');
+    span.className = 'src-line';
+    const no = document.createElement('span');
+    no.className = 'src-lineno';
+    no.textContent = (i + 1).toString();
+    span.appendChild(no);
+    span.appendChild(document.createTextNode(line || ' '));
+    contentEl.appendChild(span);
+  });
+}
+
+// ============================================================
+// DATA SCENE — tables + upload
+// ============================================================
+function renderDataScene() {
+  // Schedule table
+  const sched = document.getElementById('schedule-table');
+  sched.innerHTML = '';
+  const sh = document.createElement('thead');
+  sh.innerHTML = '<tr><th></th><th>ID</th><th>NAME</th><th>WBS</th><th class="num">D</th><th>PREDS</th></tr>';
+  sched.appendChild(sh);
+  const sb = document.createElement('tbody');
+  ACTIVITIES.forEach(a => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="wbs-swatch"><div style="background:${WBS_COLORS[a.wbs]}"></div></td>
+      <td>${a.id}</td>
+      <td>${escapeHtml(a.name)}</td>
+      <td>${a.wbs}</td>
+      <td class="num">${a.duration}</td>
+      <td style="color:var(--muted);">${a.preds.join(', ') || '—'}</td>
+    `;
+    sb.appendChild(tr);
+  });
+  sched.appendChild(sb);
+
+  // Risk table
+  const risk = document.getElementById('risk-table');
+  risk.innerHTML = '';
+  const rh = document.createElement('thead');
+  rh.innerHTML = '<tr><th>ID</th><th class="num">α</th><th class="num">μ</th><th class="num">β</th><th>NOTES</th></tr>';
+  risk.appendChild(rh);
+  const rb = document.createElement('tbody');
+  ACTIVITIES.forEach(a => {
+    const rp = RISK[a.id];
+    if (!rp) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${a.id}</td>
+      <td class="num">${rp.opt.toFixed(2)}</td>
+      <td class="num">${rp.ml.toFixed(2)}</td>
+      <td class="num" style="color:${rp.pes > 1.8 ? 'var(--red)' : rp.pes > 1.4 ? 'var(--amber)' : 'var(--text)'}">${rp.pes.toFixed(2)}</td>
+      <td style="color:var(--muted);font-size:8px;">${escapeHtml((rp.notes || '').slice(0, 50))}</td>
+    `;
+    rb.appendChild(tr);
+  });
+  risk.appendChild(rb);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Upload handlers
+document.getElementById('upload-schedule').addEventListener('click', () => document.getElementById('file-schedule-input').click());
+document.getElementById('upload-risk').addEventListener('click', () => document.getElementById('file-risk-input').click());
+document.getElementById('file-schedule-input').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      loadScheduleFromText(reader.result);
+      recomputeDerived();
+      resetState();
+      renderDataScene();
+      document.getElementById('data-status').textContent = `SCHEDULE LOADED · ${f.name} · ${ACTIVITIES.length} ACTIVITIES`;
+      document.getElementById('data-status').className = 'status ok';
+      document.getElementById('topbar-project').textContent = f.name.toUpperCase().replace('.CSV', '');
+    } catch (err) {
+      document.getElementById('data-status').textContent = `ERROR: ${err.message}`;
+      document.getElementById('data-status').className = 'status err';
+    }
+  };
+  reader.readAsText(f);
+});
+document.getElementById('file-risk-input').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      loadRiskFromText(reader.result);
+      recomputeDerived();
+      resetState();
+      renderDataScene();
+      document.getElementById('data-status').textContent = `RISK PARAMS LOADED · ${f.name}`;
+      document.getElementById('data-status').className = 'status ok';
+    } catch (err) {
+      document.getElementById('data-status').textContent = `ERROR: ${err.message}`;
+      document.getElementById('data-status').className = 'status err';
+    }
+  };
+  reader.readAsText(f);
+});
+document.getElementById('reset-data').addEventListener('click', () => {
+  loadDefaults();
+  resetState();
+  renderDataScene();
+  document.getElementById('topbar-project').textContent = 'SUMMIT TOWER · 41 FLOORS · NEWARK NJ';
+});
+
+// ============================================================
+// EXPORT FUNCTIONS
+// ============================================================
+function download(filename, content, type='text/plain') {
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportFinishes() {
+  if (state.finishes.length === 0) return alert('Run simulation first (Scene 06)');
+  const csv = 'iteration,finish_days\n' + state.finishes.map((f, i) => `${i+1},${f.toFixed(2)}`).join('\n');
+  download('finishes.csv', csv, 'text/csv');
+}
+
+function exportPercentiles() {
+  if (state.finishes.length < 10) return alert('Run simulation first (Scene 06)');
+  const sorted = [...state.finishes].sort((a,b) => a-b);
+  const n = sorted.length;
+  const pVals = [5,10,15,20,25,30,40,50,60,70,75,80,85,90,95];
+  const rows = ['percentile,days,delta_from_det,delta_pct'];
+  pVals.forEach(p => {
+    const v = sorted[Math.floor(n * p / 100)];
+    const delta = v - DET_FINISH;
+    const pct = delta / DET_FINISH * 100;
+    rows.push(`P${p},${v.toFixed(0)},${delta.toFixed(1)},${pct.toFixed(2)}`);
+  });
+  download('percentiles.csv', rows.join('\n'), 'text/csv');
+}
+
+function exportTornado() {
+  if (state.finishes.length < 50) return alert('Run simulation first (Scene 06)');
+  const corrs = ACTIVITIES.map(a => ({
+    id: a.id, name: a.name, wbs: a.wbs,
+    corr: spearman(state.activityDurations[a.id], state.finishes)
+  }));
+  corrs.sort((a, b) => Math.abs(b.corr) - Math.abs(a.corr));
+  const rows = ['rank,activity_id,activity_name,wbs,spearman_rho,interpretation'];
+  corrs.forEach((c, i) => {
+    const ac = Math.abs(c.corr);
+    const interp = ac >= 0.4 ? 'Strong driver' : ac >= 0.2 ? 'Moderate driver' : ac >= 0.1 ? 'Minor driver' : 'Negligible';
+    rows.push(`${i+1},${c.id},"${c.name}",${c.wbs},${c.corr.toFixed(4)},${interp}`);
+  });
+  download('tornado.csv', rows.join('\n'), 'text/csv');
+}
+
+function exportReport() {
+  if (state.finishes.length === 0) return alert('Run simulation first (Scene 06)');
+  const sorted = [...state.finishes].sort((a,b) => a-b);
+  const n = sorted.length;
+  const mean = state.sumT / n;
+  const variance = state.sumT2 / n - mean * mean;
+  const std = Math.sqrt(Math.max(0, variance));
+  let detIdx = sorted.findIndex(v => v >= DET_FINISH);
+  if (detIdx < 0) detIdx = n;
+  const report = {
+    generated: new Date().toISOString(),
+    iterations: n,
+    activities: ACTIVITIES.length,
+    deterministic_finish: DET_FINISH,
+    deterministic_confidence_pct: (detIdx / n * 100),
+    mean: mean,
+    std_dev: std,
+    min: sorted[0],
+    max: sorted[n-1],
+    percentiles: Object.fromEntries([5,10,25,50,75,80,90,95].map(p => [`P${p}`, sorted[Math.floor(n*p/100)]])),
+    top_drivers: ACTIVITIES
+      .map(a => ({id: a.id, name: a.name, spearman: spearman(state.activityDurations[a.id], state.finishes)}))
+      .sort((a,b) => Math.abs(b.spearman) - Math.abs(a.spearman))
+      .slice(0, 10),
+  };
+  download('report.json', JSON.stringify(report, null, 2), 'application/json');
+}
+
+function exportSVG(id, filename) {
+  const svg = document.getElementById(id);
+  if (!svg) return;
+  const serializer = new XMLSerializer();
+  let source = serializer.serializeToString(svg);
+  if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  download(filename, '<?xml version="1.0" standalone="no"?>\r\n' + source, 'image/svg+xml');
+}
+
+// ============================================================
+// SCENE NAVIGATION
+// ============================================================
+const SCENE_TITLES = ['', 'INTRO', 'SOURCE', 'DATA', 'BASELINE', 'UNCERTAINTY', 'SIMULATION', 'RESULTS'];
+
+function gotoScene(n) {
+  if (n < 1 || n > 7) return;
+  pause();
+  state.scene = n;
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById(`scene-${n}`).classList.add('active');
+  document.querySelectorAll('.scene-nav button').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.scene) === n);
+  });
+  document.getElementById('scene-num').textContent = String(n).padStart(2, '0');
+  document.getElementById('scene-title').textContent = SCENE_TITLES[n];
+  document.getElementById('sim-controls').style.display = n === 6 ? 'flex' : 'none';
+
+  if (n === 2) setTimeout(renderSourceScene, 10);
+  if (n === 3) setTimeout(renderDataScene, 10);
+  if (n === 4) setTimeout(renderBaselineGantt, 10);
+  if (n === 5) setTimeout(renderDistGrid, 10);
+  if (n === 6) setTimeout(() => { renderLiveGantt(); renderHistogram(); renderSCurve(); renderDetail(null); }, 10);
+  if (n === 7) setTimeout(() => { updateResults(); renderTornado(); }, 10);
+  document.getElementById('status-left').textContent = getStatusText();
+}
+
+document.querySelectorAll('.scene-nav button').forEach(b => {
+  b.addEventListener('click', () => gotoScene(parseInt(b.dataset.scene)));
+});
+
+// ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  switch (e.key) {
+    case 'ArrowRight': gotoScene(Math.min(7, state.scene + 1)); e.preventDefault(); break;
+    case 'ArrowLeft':  gotoScene(Math.max(1, state.scene - 1)); e.preventDefault(); break;
+    case ' ':
+      if (state.scene === 6) { state.playing ? pause() : play(); e.preventDefault(); }
+      break;
+    case 's': case 'S':
+      if (state.scene === 6) { if (state.playing) pause(); step(); }
+      break;
+    case 'r': case 'R':
+      if (state.scene === 6) { pause(); resetState(); }
+      break;
+    case 'f': case 'F':
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+      e.preventDefault();
+      break;
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+      gotoScene(parseInt(e.key)); break;
+  }
+});
+
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else document.documentElement.requestFullscreen();
+});
+
+window.addEventListener('resize', () => {
+  if (state.scene === 4) renderBaselineGantt();
+  if (state.scene === 6) { renderLiveGantt(); renderHistogram(); renderSCurve(); renderDetail(state.hovered); }
+  if (state.scene === 7) renderTornado();
+});
+
+// ============================================================
+// BOOT
+// ============================================================
+loadDefaults();
+resetState();
+renderDetail(null);
+</script>
+</body>
+</html>
