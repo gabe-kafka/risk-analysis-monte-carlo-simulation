@@ -382,8 +382,132 @@
   .data-actions .status.ok { color: var(--green); }
   .data-actions .status.err { color: var(--red); }
 
-  /* ── SCENE 4 & 5 ─────────────────────────── */
-  #scene-4, #scene-5 {
+  /* ── SCENE 4: REGISTER ───────────────────── */
+  #scene-4 {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 12px;
+    height: calc(100% - 10px);
+  }
+  .register-panel {
+    border: 1px solid var(--border);
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .register-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .register-summary .stat {
+    background: var(--bg);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .register-summary .stat .lbl {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .register-summary .stat .val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .register-summary .stat .sub {
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .register-table-wrap { overflow: auto; min-height: 0; }
+  .register-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+  .register-table thead th {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 2;
+  }
+  .register-table tbody td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--subtle);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .register-table tbody tr:hover td { background: var(--subtle); }
+  .register-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .register-table td.id { font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .register-table td.cat {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .register-table td.cat .cat-swatch {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 5px;
+    vertical-align: -1px;
+  }
+  .register-table td.title {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .register-table td.pid {
+    font-weight: 700;
+  }
+  .register-table td.pid-bar {
+    width: 72px;
+    padding-right: 10px;
+  }
+  .register-table td.pid-bar .bar {
+    display: block;
+    height: 6px;
+    background: var(--subtle);
+    position: relative;
+  }
+  .register-table td.pid-bar .bar span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+  }
+  .register-table td.activities {
+    font-size: 8px;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .register-table td.desc {
+    color: var(--dim);
+    font-size: 8.5px;
+    max-width: 340px;
+  }
+
+  /* ── SCENE 5 & 6 ─────────────────────────── */
+  #scene-5, #scene-6 {
     display: grid;
     grid-template-columns: 1fr 360px;
     gap: 12px;
@@ -423,8 +547,8 @@
   .sidebar-note .eq .katex-display { margin: 4px 0; }
   .sidebar-note p .katex { font-size: 0.95em; }
 
-  /* ── SCENE 5: UNCERTAINTY dist grid ─────── */
-  #scene-5 .dist-grid {
+  /* ── SCENE 6: UNCERTAINTY dist grid ─────── */
+  #scene-6 .dist-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1px;
@@ -441,8 +565,8 @@
   .dist-cell .params { font-size: 8px; color: var(--dim); margin-top: 2px; }
   .dist-cell svg { margin-top: 4px; }
 
-  /* ── SCENE 6: SIMULATION ─────────────────── */
-  #scene-6 {
+  /* ── SCENE 7: SIMULATION ─────────────────── */
+  #scene-7 {
     display: grid;
     grid-template-rows: auto 1fr;
     gap: 8px;
@@ -506,8 +630,8 @@
   .panel-label .mini-btn:hover { color: var(--accent); border-color: var(--accent); }
   .gantt-panel { overflow-y: auto; }
 
-  /* ── SCENE 7: RESULTS ────────────────────── */
-  #scene-7 {
+  /* ── SCENE 8: RESULTS ────────────────────── */
+  #scene-8 {
     display: grid;
     grid-template-rows: auto auto 1fr;
     gap: 8px;
@@ -689,7 +813,7 @@
 <!-- ═══ TOP BAR ═══════════════════════════════ -->
 <div id="topbar">
   <div class="brand">QSRA <span class="dim">· MONTE CARLO · SUMMIT TOWER</span></div>
-  <div class="scene-indicator">SCENE <strong id="scene-num">01</strong> / 07 · <span id="scene-title">INTRO</span></div>
+  <div class="scene-indicator">SCENE <strong id="scene-num">01</strong> / 08 · <span id="scene-title">INTRO</span></div>
   <div class="right">
     <span id="topbar-project">G. KAFKA · S.E.T · FOUNDATION DESIGN</span>
     <button id="btn-fullscreen">⛶ FULL</button>
@@ -725,7 +849,7 @@
           <div class="intro-badge"><span class="lbl">Risks</span><span class="val">15</span></div>
           <div class="intro-badge"><span class="lbl">Baseline T</span><span class="val" id="intro-det">—</span></div>
         </div>
-        <div class="intro-hint">PRESS <kbd>→</kbd> TO ADVANCE · <kbd>SPACE</kbd> TO PLAY · <kbd>F</kbd> FULLSCREEN · <kbd>1-7</kbd> JUMP</div>
+        <div class="intro-hint">PRESS <kbd>→</kbd> TO ADVANCE · <kbd>SPACE</kbd> TO PLAY · <kbd>F</kbd> FULLSCREEN · <kbd>1-8</kbd> JUMP</div>
       </div>
       <div class="intro-right">
         <img src="assets/summit-tower.jpeg" alt="Summit Tower — 41-story residential tower, Newark NJ">
@@ -784,12 +908,40 @@
     </div>
   </section>
 
-  <!-- ── SCENE 4: BASELINE ─────────────────── -->
+  <!-- ── SCENE 4: REGISTER ─────────────────── -->
   <section id="scene-4" class="scene">
+    <div class="register-panel">
+      <div class="panel-label">
+        <span>RISK REGISTER · SUMMIT TOWER · <span id="register-count">15</span> IDENTIFIED RISKS</span>
+        <span>SORTED BY PID DESC</span>
+      </div>
+      <div class="register-summary" id="register-summary"></div>
+      <div class="register-table-wrap">
+        <table class="register-table" id="register-table"></table>
+      </div>
+    </div>
+    <div class="sidebar-note">
+      <h3>01 · WHAT IS A RISK REGISTER?</h3>
+      <p>A structured log of identified threats to the project, each with an owner, a category, a probability estimate, and an impact estimate. It is the bridge between qualitative risk workshops and the quantitative model.</p>
+      <h3>02 · THE PID SCORE</h3>
+      <p>PID = <strong>Probability × Impact (days)</strong>. A single scalar used to rank risks and to govern how wide the pessimistic tail $\beta_i$ of an affected activity's triangular distribution should be.</p>
+      <div class="eq">$$\mathrm{PID}_r = \Pr(r) \cdot \mathrm{Impact}_r$$</div>
+      <p style="color: var(--muted); font-size: 10px;">e.g. SKD-02 Groundwater: $0.80 \times 80\,\text{days} = 64$ — the highest-scoring risk in the register.</p>
+      <h3>03 · REGISTER → DISTRIBUTION</h3>
+      <p>Each activity's $\beta_i$ is inflated by the sum of PID scores for the risks it is exposed to. Activities exposed to multiple high-PID risks receive the widest tails.</p>
+      <p style="color: var(--muted); font-size: 10px;">A402 Pile Install carries 5 risks (PID 36+28+28+28+18 = 138) → $\beta = 2.20$.</p>
+      <h3>04 · WHY NO DISCRETE EVENTS</h3>
+      <p>Per AACE RP 57R-09, discrete probability/impact events are not modeled separately. All risk is folded into duration width — trading event-level fidelity for parameter transparency and auditability.</p>
+      <p style="color: var(--accent); margin-top: 18px;">→ NEXT: THE DETERMINISTIC BASELINE</p>
+    </div>
+  </section>
+
+  <!-- ── SCENE 5: BASELINE ─────────────────── -->
+  <section id="scene-5" class="scene">
     <div class="panel gantt-panel" style="border: 1px solid var(--border);">
       <div class="panel-label">
         <span>DETERMINISTIC BASELINE GANTT · CPM FORWARD PASS</span>
-        <span id="scene4-finish">T_DET = — DAYS</span>
+        <span id="scene5-finish">T_DET = — DAYS</span>
       </div>
       <svg id="gantt-baseline" width="100%" height="720"></svg>
     </div>
@@ -806,8 +958,8 @@ $$T^{\text{det}} = \max_{i} EF_i$$</div>
     </div>
   </section>
 
-  <!-- ── SCENE 5: UNCERTAINTY ──────────────── -->
-  <section id="scene-5" class="scene">
+  <!-- ── SCENE 6: UNCERTAINTY ──────────────── -->
+  <section id="scene-6" class="scene">
     <div style="overflow: auto; border: 1px solid var(--border); padding: 8px;">
       <div class="panel-label" style="margin-bottom: 10px;">
         <span>TRIANGULAR DURATION DISTRIBUTIONS · ONE PER ACTIVITY</span>
@@ -829,8 +981,8 @@ $$T^{\text{det}} = \max_{i} EF_i$$</div>
     </div>
   </section>
 
-  <!-- ── SCENE 6: SIMULATION ───────────────── -->
-  <section id="scene-6" class="scene">
+  <!-- ── SCENE 7: SIMULATION ───────────────── -->
+  <section id="scene-7" class="scene">
     <div class="kpi-strip">
       <div class="kpi"><span class="label">Iterations</span><span class="value" id="kpi-iter">0</span><span class="sub">/ 10,000</span></div>
       <div class="kpi"><span class="label">Current T</span><span class="value" id="kpi-current">—</span><span class="sub">working days</span></div>
@@ -869,8 +1021,8 @@ $$T^{\text{det}} = \max_{i} EF_i$$</div>
     </div>
   </section>
 
-  <!-- ── SCENE 7: RESULTS ──────────────────── -->
-  <section id="scene-7" class="scene">
+  <!-- ── SCENE 8: RESULTS ──────────────────── -->
+  <section id="scene-8" class="scene">
     <div class="kpi-strip">
       <div class="kpi"><span class="label">Iterations</span><span class="value" id="res-iter">—</span><span class="sub">total</span></div>
       <div class="kpi"><span class="label">T deterministic</span><span class="value" id="res-det">—</span><span class="sub">days</span></div>
@@ -930,10 +1082,11 @@ $$T^{\text{det}} = \max_{i} EF_i$$</div>
     <button data-scene="1" class="active">01 · INTRO</button>
     <button data-scene="2">02 · SOURCE</button>
     <button data-scene="3">03 · DATA</button>
-    <button data-scene="4">04 · BASELINE</button>
-    <button data-scene="5">05 · UNCERTAINTY</button>
-    <button data-scene="6">06 · SIMULATION</button>
-    <button data-scene="7">07 · RESULTS</button>
+    <button data-scene="4">04 · REGISTER</button>
+    <button data-scene="5">05 · BASELINE</button>
+    <button data-scene="6">06 · UNCERTAINTY</button>
+    <button data-scene="7">07 · SIMULATION</button>
+    <button data-scene="8">08 · RESULTS</button>
   </div>
   <div class="status-left" id="status-left">READY</div>
   <div class="controls" id="sim-controls" style="display:none;">
@@ -1188,6 +1341,25 @@ A901,0.75,1.00,1.70,Final inspections — SKD-14 inspection delays (PID 14)
 A902,0.80,1.00,1.70,Punch list — scope creep
 A903,0.65,1.00,2.00,Occupancy cert — SKD-14 inspection delays (PID 14) — regulatory uncertainty
 A904,0.85,1.00,1.30,Final handover — no identified risks
+</script>
+
+<script type="text/plain" data-file="data/example/summit-tower-risk-register.csv">
+risk_id,category,title,pid,affected_count,affected_activities,description
+SKD-01,Economic,Material price escalation,36,8,A402;A405;A406;A502;A503;A504;A505;A506,Steel and concrete prices exceed tender estimate — propagates through pile cap and superstructure concrete works
+SKD-02,Geotechnical,Groundwater intrusion,64,4,A302;A303;A304;A407,Water table higher than anticipated — extended dewatering and waterproofing required at Newark waterfront site
+SKD-03,Regulatory,Permit approval delays,28,2,A104;A106,Municipal permit review exceeds statutory window; mobilization cascade
+SKD-04,HR/Labor,Labor productivity shortfall,28,11,A402;A501;A502;A503;A504;A505;A506;A602;A603;A702;A703,Skilled trades shortage in local market affects pile install core floor cycles curtain wall and MEP
+SKD-05,Environmental,Adverse weather,28,12,A204;A301;A302;A303;A304;A401;A402;A501;A502;A503;A504;A505,Winter storms and high winds suspend excavation crane and floor-cycle operations
+SKD-06,Geotechnical,Pile capacity shortfall,28,3,A402;A403;A405,Load test fails design capacity — re-drive or redesign of mat reinforcement required
+SKD-07,Supply Chain,Tower crane delivery,15,1,A501,Long-lead crane shipment delayed from manufacturer
+SKD-08,Geotechnical,Excavation wall failure,20,3,A301;A302;A304,Shoring instability during bulk excavation — localized rework
+SKD-09,Construction,Underground utility strike,18,2,A202;A301,Unmapped utility hit during utility relocation or shoring
+SKD-10,Construction,Tower crane erection issue,15,1,A501,Erection complications extend installation window
+SKD-11,Supply Chain,Material delivery slippage,18,3,A402;A502;A601,Rebar and curtain-wall lead-time delay — long-lead procurement
+SKD-12,HSE,Safety incident / stand-down,15,10,A301;A302;A303;A304;A501;A502;A503;A504;A505;A506,OSHA stop-work event triggers inspection and crew re-training
+SKD-13,Design,Late design changes,14,3,A102;A405;A502,RFI-driven rework during design coordination and early construction
+SKD-14,Regulatory,Inspection delays,14,3,A104;A901;A903,Regulator sign-off slower than scheduled — permit and occupancy-cert risk
+SKD-15,Geotechnical,Differential settlement,10,2,A407;A501,Mat foundation settles non-uniformly — monitoring and corrective works
 </script>
 
 <script type="text/plain" data-file="docs/methodology.tex">
@@ -1667,7 +1839,7 @@ function recomputeDerived() {
 
   document.getElementById('intro-n').textContent = ACTIVITIES.length;
   document.getElementById('intro-det').textContent = DET_FINISH.toFixed(0) + 'd';
-  document.getElementById('scene4-finish').textContent = `T_DET = ${DET_FINISH.toFixed(0)} DAYS`;
+  document.getElementById('scene5-finish').textContent = `T_DET = ${DET_FINISH.toFixed(0)} DAYS`;
   document.getElementById('kpi-det').textContent = DET_FINISH.toFixed(0);
   document.getElementById('sched-count').textContent = ACTIVITIES.length;
   document.getElementById('risk-count').textContent = Object.keys(RISK).length;
@@ -1758,7 +1930,7 @@ function resetState() {
   ACTIVITIES.forEach(a => { state.activityDurations[a.id] = []; });
   histBins = new Array(HIST_NBINS).fill(0);
   updateKPIs();
-  if (state.scene === 6) renderLiveGantt();
+  if (state.scene === 7) renderLiveGantt();
   renderHistogram();
   renderSCurve();
   renderDetail(null);
@@ -1775,7 +1947,7 @@ function ns(tag, attrs={}) {
 }
 
 // ============================================================
-// GANTT RENDERING (shared: scene 4 baseline & scene 6 live)
+// GANTT RENDERING (shared: scene 5 baseline & scene 7 live)
 // ============================================================
 const ROW_H = 14;
 const HEADER_H = 30;
@@ -2216,7 +2388,7 @@ function renderTornado() {
   if (state.finishes.length < 50) {
     svg.setAttribute('height', 100);
     const t = ns('text', {x: w/2, y: 50, 'text-anchor': 'middle', class: 'axis-label'});
-    t.textContent = 'run simulation first (scene 06)';
+    t.textContent = 'run simulation first (scene 07)';
     svg.appendChild(t);
     return;
   }
@@ -2313,7 +2485,7 @@ function updateResults() {
   document.getElementById('interp-p80').textContent = sorted[Math.floor(n * 0.80)].toFixed(0);
   document.getElementById('interp-std').textContent = std.toFixed(0);
 
-  if (state.scene === 7) renderTornado();
+  if (state.scene === 8) renderTornado();
 }
 
 // ============================================================
@@ -2340,7 +2512,7 @@ function updateKPIs() {
 }
 
 function getStatusText() {
-  if (state.scene === 6) return `${state.playing ? 'RUNNING' : 'PAUSED'} · ITER ${state.iteration.toLocaleString()} / ${state.maxIter.toLocaleString()}`;
+  if (state.scene === 7) return `${state.playing ? 'RUNNING' : 'PAUSED'} · ITER ${state.iteration.toLocaleString()} / ${state.maxIter.toLocaleString()}`;
   return 'READY';
 }
 
@@ -2366,7 +2538,7 @@ function step() {
   state.ghosts.push({ES: fp.ES, EF: fp.EF});
   while (state.ghosts.length > state.ghostCount) state.ghosts.shift();
 
-  if (state.scene === 6) renderLiveGantt();
+  if (state.scene === 7) renderLiveGantt();
   renderHistogram();
   if (state.iteration % 5 === 0 || state.iteration < 100) renderSCurve();
   if (state.hovered) renderDetail(state.hovered);
@@ -2422,6 +2594,7 @@ const FILE_ORDER = [
   'scripts/combine_outputs.py',
   'data/example/summit-tower-activities.csv',
   'data/example/summit-tower-risk-params.csv',
+  'data/example/summit-tower-risk-register.csv',
 ];
 
 function renderSourceScene() {
@@ -2473,6 +2646,96 @@ function selectFile(path) {
     span.appendChild(document.createTextNode(line || ' '));
     contentEl.appendChild(span);
   });
+}
+
+// ============================================================
+// REGISTER SCENE — risk register table
+// ============================================================
+const CAT_COLORS = {
+  'Economic':      '#D97706',
+  'Geotechnical':  '#8D99AE',
+  'Regulatory':    '#7B2CBF',
+  'HR/Labor':      '#2A9D8F',
+  'Environmental': '#06B6D4',
+  'Supply Chain':  '#BC6C25',
+  'Construction':  '#E76F51',
+  'HSE':           '#DC2626',
+  'Design':        '#3B82F6',
+};
+
+let REGISTER_ROWS = null;
+
+function parseRegisterCsv(text) {
+  const lines = text.trim().split('\n');
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const parts = line.split(',');
+    rows.push({
+      id: parts[0],
+      category: parts[1],
+      title: parts[2],
+      pid: parseInt(parts[3], 10),
+      affectedCount: parseInt(parts[4], 10),
+      activities: (parts[5] || '').split(';').filter(Boolean),
+      description: parts.slice(6).join(','),
+    });
+  }
+  rows.sort((a, b) => b.pid - a.pid || b.affectedCount - a.affectedCount);
+  return rows;
+}
+
+function renderRegister() {
+  if (!REGISTER_ROWS) {
+    const text = REPO_FILES['data/example/summit-tower-risk-register.csv'] || '';
+    REGISTER_ROWS = parseRegisterCsv(text);
+  }
+  const rows = REGISTER_ROWS;
+  const maxPid = rows.reduce((m, r) => Math.max(m, r.pid), 0);
+  const totalPid = rows.reduce((s, r) => s + r.pid, 0);
+  const cats = new Set(rows.map(r => r.category));
+  const totalExposures = rows.reduce((s, r) => s + r.affectedCount, 0);
+
+  document.getElementById('register-count').textContent = rows.length;
+
+  const summary = document.getElementById('register-summary');
+  summary.innerHTML = '';
+  const tiles = [
+    { lbl: 'Identified Risks', val: rows.length, sub: 'SKD-01 … SKD-15' },
+    { lbl: 'Categories',       val: cats.size,   sub: 'WBS-independent' },
+    { lbl: 'Max PID',          val: maxPid,      sub: 'SKD-02 Groundwater' },
+    { lbl: 'Σ Exposures',      val: totalExposures, sub: 'risk→activity links' },
+  ];
+  tiles.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'stat';
+    div.innerHTML = `<span class="lbl">${t.lbl}</span><span class="val">${t.val}</span><span class="sub">${t.sub}</span>`;
+    summary.appendChild(div);
+  });
+
+  const table = document.getElementById('register-table');
+  table.innerHTML = '';
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>ID</th><th>CATEGORY</th><th>RISK</th><th class="num">PID</th><th>SCORE</th><th class="num">N</th><th>AFFECTED ACTIVITIES</th><th>DESCRIPTION</th></tr>';
+  table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    const color = CAT_COLORS[r.category] || 'var(--muted)';
+    const pct = Math.round((r.pid / maxPid) * 100);
+    tr.innerHTML = `
+      <td class="id">${r.id}</td>
+      <td class="cat"><span class="cat-swatch" style="background:${color}"></span>${r.category}</td>
+      <td class="title">${escapeHtml(r.title)}</td>
+      <td class="num pid">${r.pid}</td>
+      <td class="pid-bar"><span class="bar"><span style="width:${pct}%;background:${color}"></span></span></td>
+      <td class="num">${r.affectedCount}</td>
+      <td class="activities" title="${r.activities.join(', ')}">${r.activities.join(' · ')}</td>
+      <td class="desc">${escapeHtml(r.description)}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
 }
 
 // ============================================================
@@ -2668,10 +2931,10 @@ function exportSVG(id, filename) {
 // ============================================================
 // SCENE NAVIGATION
 // ============================================================
-const SCENE_TITLES = ['', 'INTRO', 'SOURCE', 'DATA', 'BASELINE', 'UNCERTAINTY', 'SIMULATION', 'RESULTS'];
+const SCENE_TITLES = ['', 'INTRO', 'SOURCE', 'DATA', 'REGISTER', 'BASELINE', 'UNCERTAINTY', 'SIMULATION', 'RESULTS'];
 
 function gotoScene(n) {
-  if (n < 1 || n > 7) return;
+  if (n < 1 || n > 8) return;
   pause();
   state.scene = n;
   document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
@@ -2681,14 +2944,15 @@ function gotoScene(n) {
   });
   document.getElementById('scene-num').textContent = String(n).padStart(2, '0');
   document.getElementById('scene-title').textContent = SCENE_TITLES[n];
-  document.getElementById('sim-controls').style.display = n === 6 ? 'flex' : 'none';
+  document.getElementById('sim-controls').style.display = n === 7 ? 'flex' : 'none';
 
   if (n === 2) setTimeout(renderSourceScene, 10);
   if (n === 3) setTimeout(renderDataScene, 10);
-  if (n === 4) setTimeout(renderBaselineGantt, 10);
-  if (n === 5) setTimeout(renderDistGrid, 10);
-  if (n === 6) setTimeout(() => { renderLiveGantt(); renderHistogram(); renderSCurve(); renderDetail(null); }, 10);
-  if (n === 7) setTimeout(() => { updateResults(); renderTornado(); }, 10);
+  if (n === 4) setTimeout(renderRegister, 10);
+  if (n === 5) setTimeout(renderBaselineGantt, 10);
+  if (n === 6) setTimeout(renderDistGrid, 10);
+  if (n === 7) setTimeout(() => { renderLiveGantt(); renderHistogram(); renderSCurve(); renderDetail(null); }, 10);
+  if (n === 8) setTimeout(() => { updateResults(); renderTornado(); }, 10);
   document.getElementById('status-left').textContent = getStatusText();
 }
 
@@ -2702,23 +2966,23 @@ document.querySelectorAll('.scene-nav button').forEach(b => {
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   switch (e.key) {
-    case 'ArrowRight': gotoScene(Math.min(7, state.scene + 1)); e.preventDefault(); break;
+    case 'ArrowRight': gotoScene(Math.min(8, state.scene + 1)); e.preventDefault(); break;
     case 'ArrowLeft':  gotoScene(Math.max(1, state.scene - 1)); e.preventDefault(); break;
     case ' ':
-      if (state.scene === 6) { state.playing ? pause() : play(); e.preventDefault(); }
+      if (state.scene === 7) { state.playing ? pause() : play(); e.preventDefault(); }
       break;
     case 's': case 'S':
-      if (state.scene === 6) { if (state.playing) pause(); step(); }
+      if (state.scene === 7) { if (state.playing) pause(); step(); }
       break;
     case 'r': case 'R':
-      if (state.scene === 6) { pause(); resetState(); }
+      if (state.scene === 7) { pause(); resetState(); }
       break;
     case 'f': case 'F':
       if (document.fullscreenElement) document.exitFullscreen();
       else document.documentElement.requestFullscreen();
       e.preventDefault();
       break;
-    case '1': case '2': case '3': case '4': case '5': case '6': case '7':
+    case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8':
       gotoScene(parseInt(e.key)); break;
   }
 });
@@ -2729,9 +2993,9 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
 });
 
 window.addEventListener('resize', () => {
-  if (state.scene === 4) renderBaselineGantt();
-  if (state.scene === 6) { renderLiveGantt(); renderHistogram(); renderSCurve(); renderDetail(state.hovered); }
-  if (state.scene === 7) renderTornado();
+  if (state.scene === 5) renderBaselineGantt();
+  if (state.scene === 7) { renderLiveGantt(); renderHistogram(); renderSCurve(); renderDetail(state.hovered); }
+  if (state.scene === 8) renderTornado();
 });
 
 // ============================================================
@@ -2740,6 +3004,9 @@ window.addEventListener('resize', () => {
 loadDefaults();
 resetState();
 renderDetail(null);
+
+const hashScene = parseInt((location.hash || '').replace('#', ''), 10);
+if (hashScene >= 1 && hashScene <= 8) gotoScene(hashScene);
 </script>
 </body>
 </html>

@@ -1,0 +1,16 @@
+risk_id,category,title,pid,affected_count,affected_activities,description
+SKD-01,Economic,Material price escalation,36,8,"A402;A405;A406;A502;A503;A504;A505;A506",Steel and concrete prices exceed tender estimate — propagates through pile cap and superstructure concrete works
+SKD-02,Geotechnical,Groundwater intrusion,64,4,"A302;A303;A304;A407",Water table higher than anticipated — extended dewatering and waterproofing required at Newark waterfront site
+SKD-03,Regulatory,Permit approval delays,28,2,"A104;A106",Municipal permit review exceeds statutory window; mobilization cascade
+SKD-04,HR/Labor,Labor productivity shortfall,28,11,"A402;A501;A502;A503;A504;A505;A506;A602;A603;A702;A703",Skilled trades shortage in local market affects pile install, core, floor cycles, curtain wall and MEP
+SKD-05,Environmental,Adverse weather,28,12,"A204;A301;A302;A303;A304;A401;A402;A501;A502;A503;A504;A505",Winter storms and high winds suspend excavation, crane and floor-cycle operations
+SKD-06,Geotechnical,Pile capacity shortfall,28,3,"A402;A403;A405",Load test fails design capacity — re-drive or redesign of mat reinforcement required
+SKD-07,Supply Chain,Tower crane delivery,15,1,"A501",Long-lead crane shipment delayed from manufacturer
+SKD-08,Geotechnical,Excavation wall failure,20,3,"A301;A302;A304",Shoring instability during bulk excavation — localized rework
+SKD-09,Construction,Underground utility strike,18,2,"A202;A301",Unmapped utility hit during utility relocation or shoring
+SKD-10,Construction,Tower crane erection issue,15,1,"A501",Erection complications extend installation window
+SKD-11,Supply Chain,Material delivery slippage,18,3,"A402;A502;A601",Rebar and curtain-wall lead-time delay — long-lead procurement
+SKD-12,HSE,Safety incident / stand-down,15,10,"A301;A302;A303;A304;A501;A502;A503;A504;A505;A506",OSHA stop-work event triggers inspection and crew re-training
+SKD-13,Design,Late design changes,14,3,"A102;A405;A502",RFI-driven rework during design coordination and early construction
+SKD-14,Regulatory,Inspection delays,14,3,"A104;A901;A903",Regulator sign-off slower than scheduled — permit and occupancy-cert risk
+SKD-15,Geotechnical,Differential settlement,10,2,"A407;A501",Mat foundation settles non-uniformly — monitoring and corrective works
